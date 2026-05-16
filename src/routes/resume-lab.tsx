@@ -3,144 +3,130 @@ import { AppShell } from "@/components/zenith/AppShell";
 import { PageHeader } from "@/components/zenith/PageHeader";
 import { Sparkles, FileDown, FileText, ArrowRight } from "lucide-react";
 import { useState } from "react";
-import { MOCK_JOBS } from "@/lib/mock-data";
+import { useMutation } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { analyzeResume, optimizeResume, generateCoverLetter, exportResumeToDocs, exportCoverLetterToDocs } from "@/lib/resume.functions";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/resume-lab")({
-  head: () => ({ meta: [{ title: "Resume Lab — Zenith" }, { name: "description", content: "AI rewrites your resume per job and predicts the new ATS score." }] }),
+  head: () => ({ meta: [{ title: "Resume Lab — Zenith" }] }),
   component: ResumeLab,
 });
 
-const STEPS = ["Select Job", "ATS Analysis", "AI Optimize", "Cover Letter", "Export"];
-
 function ResumeLab() {
-  const [step, setStep] = useState(0);
+  const analyzeFn = useServerFn(analyzeResume);
+  const optimizeFn = useServerFn(optimizeResume);
+  const coverFn = useServerFn(generateCoverLetter);
+  const exportResFn = useServerFn(exportResumeToDocs);
+  const exportCovFn = useServerFn(exportCoverLetterToDocs);
+
+  const [resume, setResume] = useState("");
+  const [jd, setJd] = useState("");
+  const [company, setCompany] = useState("");
+
+  const [analysis, setAnalysis] = useState<any>(null);
+  const [optimized, setOptimized] = useState<{ resume: string; id: string; version: number } | null>(null);
+  const [letter, setLetter] = useState<{ letter: string; id: string; version: number } | null>(null);
+
+  const analyze = useMutation({
+    mutationFn: () => analyzeFn({ data: { resume, jobDescription: jd } }),
+    onSuccess: setAnalysis, onError: (e: any) => toast.error(e.message),
+  });
+  const optimize = useMutation({
+    mutationFn: () => optimizeFn({ data: { resume, jobDescription: jd } }),
+    onSuccess: (r) => { setOptimized(r); toast.success(`Saved as version ${r.version}`); }, onError: (e: any) => toast.error(e.message),
+  });
+  const cover = useMutation({
+    mutationFn: () => coverFn({ data: { resume, jobDescription: jd, company: company || "the company" } }),
+    onSuccess: (r) => { setLetter(r); toast.success("Cover letter generated"); }, onError: (e: any) => toast.error(e.message),
+  });
+  const exportRes = useMutation({
+    mutationFn: () => exportResFn({ data: { resumeId: optimized!.id } }),
+    onSuccess: (r) => { window.open(r.url, "_blank"); toast.success("Exported to Google Docs"); },
+    onError: (e: any) => toast.error(e.message),
+  });
+  const exportCov = useMutation({
+    mutationFn: () => exportCovFn({ data: { letterId: letter!.id } }),
+    onSuccess: (r) => { window.open(r.url, "_blank"); toast.success("Exported to Google Docs"); },
+    onError: (e: any) => toast.error(e.message),
+  });
+
   return (
     <AppShell>
       <PageHeader title="Resume Lab" description="AI rewrites your resume per job — and proves it on ATS." />
 
-      <div className="mb-6 flex flex-wrap items-center gap-2">
-        {STEPS.map((s, i) => (
-          <button key={s} onClick={() => setStep(i)} className={`rounded-full border px-3 py-1 text-xs font-bold transition-all ${i === step ? "border-primary bg-gradient-brand text-white shadow-glow" : "border-border bg-card hover:bg-accent"}`}>
-            {i + 1}. {s}
-          </button>
-        ))}
+      <div className="grid gap-4 lg:grid-cols-2">
+        <div className="rounded-2xl border-2 border-border bg-card p-4">
+          <label className="text-xs font-bold uppercase text-muted-foreground">Your resume (plain text)</label>
+          <textarea value={resume} onChange={(e) => setResume(e.target.value)} rows={10} placeholder="Paste your resume here…" className="mt-2 w-full rounded-lg border border-border bg-background p-3 text-sm" />
+        </div>
+        <div className="rounded-2xl border-2 border-border bg-card p-4">
+          <label className="text-xs font-bold uppercase text-muted-foreground">Job description</label>
+          <textarea value={jd} onChange={(e) => setJd(e.target.value)} rows={8} placeholder="Paste the job description…" className="mt-2 w-full rounded-lg border border-border bg-background p-3 text-sm" />
+          <input value={company} onChange={(e) => setCompany(e.target.value)} placeholder="Company name (for cover letter)" className="mt-2 w-full rounded-lg border border-border bg-background px-3 py-2 text-sm" />
+        </div>
       </div>
 
-      {step === 0 && (
-        <div className="grid gap-3 md:grid-cols-2">
-          {MOCK_JOBS.slice(0, 4).map((j) => (
-            <button key={j.id} onClick={() => setStep(1)} className="flex items-center gap-3 rounded-2xl border-2 border-border bg-card p-4 text-left transition-all hover:-translate-y-0.5 hover:border-primary/50">
-              <div className={`grid h-12 w-12 place-items-center rounded-xl bg-gradient-to-br ${j.logoBg} font-bold text-white`}>{j.company[0]}</div>
-              <div className="min-w-0 flex-1">
-                <div className="truncate text-sm font-semibold">{j.title}</div>
-                <div className="truncate text-xs text-muted-foreground">{j.company} · {j.location}</div>
-              </div>
-              <span className="font-extrabold text-primary">{j.atsScore}%</span>
-            </button>
-          ))}
+      <div className="mt-4 flex flex-wrap gap-2">
+        <button onClick={() => analyze.mutate()} disabled={analyze.isPending || !resume || !jd} className="inline-flex items-center gap-2 rounded-lg border-2 border-border bg-card px-4 py-2 text-sm font-semibold disabled:opacity-50">
+          <Sparkles className="h-4 w-4" /> {analyze.isPending ? "Analyzing…" : "Analyze ATS"}
+        </button>
+        <button onClick={() => optimize.mutate()} disabled={optimize.isPending || !resume || !jd} className="inline-flex items-center gap-2 rounded-lg bg-gradient-brand px-4 py-2 text-sm font-semibold text-white shadow-glow disabled:opacity-50">
+          <Sparkles className="h-4 w-4" /> {optimize.isPending ? "Optimizing…" : "AI Optimize"}
+        </button>
+        <button onClick={() => cover.mutate()} disabled={cover.isPending || !resume || !jd} className="inline-flex items-center gap-2 rounded-lg border-2 border-secondary/40 bg-card px-4 py-2 text-sm font-semibold disabled:opacity-50">
+          <FileText className="h-4 w-4" /> {cover.isPending ? "Writing…" : "Generate cover letter"}
+        </button>
+      </div>
+
+      {analysis && (
+        <div className="mt-6 rounded-2xl border-2 border-primary/40 bg-gradient-to-br from-primary/10 to-card p-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <div className="text-xs font-bold uppercase text-muted-foreground">ATS Score</div>
+              <div className="text-5xl font-extrabold text-primary">{analysis.score}%</div>
+            </div>
+            <ArrowRight className="h-6 w-6 text-muted-foreground" />
+          </div>
+          <div className="mt-4 grid gap-3 md:grid-cols-2">
+            <div>
+              <div className="text-xs font-bold uppercase text-success">Matched</div>
+              <div className="mt-2 flex flex-wrap gap-1">{(analysis.matched ?? []).map((k: string) => <span key={k} className="rounded-full bg-success/15 px-2 py-0.5 text-xs font-bold text-success">✓ {k}</span>)}</div>
+            </div>
+            <div>
+              <div className="text-xs font-bold uppercase text-danger">Missing</div>
+              <div className="mt-2 flex flex-wrap gap-1">{(analysis.missing ?? []).map((k: string) => <span key={k} className="rounded-full bg-danger/15 px-2 py-0.5 text-xs font-bold text-danger">– {k}</span>)}</div>
+            </div>
+          </div>
+          {analysis.suggestions && (
+            <ul className="mt-4 space-y-1 text-sm">{analysis.suggestions.map((s: string, i: number) => <li key={i}>• {s}</li>)}</ul>
+          )}
         </div>
       )}
 
-      {step === 1 && (
-        <div className="grid gap-4 lg:grid-cols-2">
-          <div className="rounded-2xl border-2 border-border bg-card p-5">
-            <h3 className="text-lg font-bold">Missing keywords</h3>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {["GraphQL", "Postgres", "CI/CD", "Tailwind", "Playwright"].map((k) => (
-                <span key={k} className="rounded-full bg-danger/15 px-3 py-1 text-xs font-bold text-danger">– {k}</span>
-              ))}
-            </div>
-          </div>
-          <div className="rounded-2xl border-2 border-border bg-card p-5">
-            <h3 className="text-lg font-bold">Matched keywords</h3>
-            <div className="mt-3 flex flex-wrap gap-2">
-              {["React", "TypeScript", "Node", "REST", "Figma", "Git", "Vite"].map((k) => (
-                <span key={k} className="rounded-full bg-success/15 px-3 py-1 text-xs font-bold text-success">✓ {k}</span>
-              ))}
-            </div>
-          </div>
-          <div className="rounded-2xl border-2 border-primary/40 bg-gradient-to-br from-primary/10 to-card p-6 lg:col-span-2">
-            <div className="flex items-center justify-between text-sm font-semibold">
-              <span>Current ATS</span>
-              <span>Predicted after rewrite</span>
-            </div>
-            <div className="mt-2 flex items-center justify-between text-3xl font-extrabold">
-              <span className="text-danger">62%</span>
-              <ArrowRight className="h-6 w-6 text-muted-foreground" />
-              <span className="text-success">88%</span>
-            </div>
-            <div className="mt-3 h-3 overflow-hidden rounded-full bg-muted">
-              <div className="h-full bg-gradient-brand transition-all" style={{ width: "88%" }} />
-            </div>
-            <button onClick={() => setStep(2)} className="mt-5 inline-flex items-center gap-2 rounded-lg bg-gradient-brand px-4 py-2 text-sm font-semibold text-white shadow-glow">
-              <Sparkles className="h-4 w-4" /> Run AI optimize
+      {optimized && (
+        <div className="mt-6 rounded-2xl border-2 border-primary/40 bg-card p-5">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-bold">Optimized resume — v{optimized.version}</h3>
+            <button onClick={() => exportRes.mutate()} disabled={exportRes.isPending} className="inline-flex items-center gap-2 rounded-lg bg-gradient-brand px-3 py-1.5 text-xs font-semibold text-white shadow-glow disabled:opacity-50">
+              <FileDown className="h-3.5 w-3.5" /> {exportRes.isPending ? "Exporting…" : "Export to Google Docs"}
             </button>
           </div>
+          <pre className="mt-4 whitespace-pre-wrap rounded-xl bg-background p-4 text-sm leading-relaxed">{optimized.resume}</pre>
         </div>
       )}
 
-      {step === 2 && (
-        <div className="grid gap-4 lg:grid-cols-2">
-          <ResumePanel title="Original" tone="muted" body="• Built a web app using React and Node.\n• Worked on REST APIs.\n• Helped team with Figma designs and code reviews." />
-          <ResumePanel
-            title="AI Optimized"
-            tone="primary"
-            body="• Shipped a production React + TypeScript app to 12k MAU using GraphQL + Postgres on a Vercel CI/CD pipeline.\n• Designed and tested REST + GraphQL APIs with Playwright, cutting regressions 40%.\n• Translated Figma into a Tailwind design system used across 8 product surfaces."
-            highlight={["GraphQL", "TypeScript", "Postgres", "CI/CD", "Playwright", "Tailwind"]}
-          />
-          <div className="lg:col-span-2 flex justify-end">
-            <button onClick={() => setStep(3)} className="inline-flex items-center gap-2 rounded-lg bg-gradient-brand px-4 py-2 text-sm font-semibold text-white shadow-glow">
-              Generate cover letter <ArrowRight className="h-4 w-4" />
+      {letter && (
+        <div className="mt-6 rounded-2xl border-2 border-secondary/40 bg-card p-5">
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg font-bold">Cover letter — v{letter.version}</h3>
+            <button onClick={() => exportCov.mutate()} disabled={exportCov.isPending} className="inline-flex items-center gap-2 rounded-lg bg-gradient-brand px-3 py-1.5 text-xs font-semibold text-white shadow-glow disabled:opacity-50">
+              <FileDown className="h-3.5 w-3.5" /> {exportCov.isPending ? "Exporting…" : "Export to Google Docs"}
             </button>
           </div>
-        </div>
-      )}
-
-      {step === 3 && (
-        <div className="rounded-2xl border-2 border-border bg-card p-6">
-          <h3 className="flex items-center gap-2 text-lg font-bold"><FileText className="h-5 w-5 text-secondary" /> Cover letter</h3>
-          <pre className="mt-4 whitespace-pre-wrap rounded-xl bg-background p-4 text-sm leading-relaxed">{`Hi Linear team,
-
-I've been a daily user of Linear for two years — the keyboard-first workflow is exactly what I try to build. I'm applying for the Frontend Engineer role because I want to help craft that level of taste at scale.
-
-In my last project I shipped a React + TypeScript app to 12k MAU and built a Tailwind design system used across 8 surfaces. The combination of speed, polish, and engineering rigor in your product is rare; I'd love to add to it.
-
-Looking forward to talking,
-Aarav`}</pre>
-          <button onClick={() => setStep(4)} className="mt-5 inline-flex items-center gap-2 rounded-lg bg-gradient-brand px-4 py-2 text-sm font-semibold text-white shadow-glow">
-            Continue to export <ArrowRight className="h-4 w-4" />
-          </button>
-        </div>
-      )}
-
-      {step === 4 && (
-        <div className="grid gap-4 md:grid-cols-3">
-          {[
-            { i: FileDown, l: "Download PDF", c: "from-primary to-cyan" },
-            { i: FileText, l: "Save to Google Docs", c: "from-secondary to-gold" },
-            { i: Sparkles, l: "Copy to clipboard", c: "from-cyan to-success" },
-          ].map((x) => (
-            <button key={x.l} className={`group rounded-2xl border-2 border-border bg-card p-6 text-left transition-all hover:-translate-y-0.5 hover:shadow-glow`}>
-              <div className={`grid h-12 w-12 place-items-center rounded-xl bg-gradient-to-br ${x.c} text-white`}><x.i className="h-6 w-6" /></div>
-              <div className="mt-3 font-bold">{x.l}</div>
-              <div className="text-xs text-muted-foreground">Version v3 · saved 2 mins ago</div>
-            </button>
-          ))}
+          <pre className="mt-4 whitespace-pre-wrap rounded-xl bg-background p-4 text-sm leading-relaxed">{letter.letter}</pre>
         </div>
       )}
     </AppShell>
-  );
-}
-
-function ResumePanel({ title, body, tone, highlight = [] }: { title: string; body: string; tone: "muted" | "primary"; highlight?: string[] }) {
-  let html = body;
-  highlight.forEach((h) => {
-    html = html.replaceAll(h, `<mark class="rounded bg-success/30 px-1 text-success">${h}</mark>`);
-  });
-  return (
-    <div className={`rounded-2xl border-2 p-5 ${tone === "primary" ? "border-primary/40 bg-gradient-to-br from-primary/5 to-card" : "border-border bg-card"}`}>
-      <h3 className="text-sm font-bold uppercase tracking-wide text-muted-foreground">{title}</h3>
-      <pre className="mt-3 whitespace-pre-wrap text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: html }} />
-    </div>
   );
 }
