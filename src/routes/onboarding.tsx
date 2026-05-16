@@ -1,19 +1,75 @@
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Logo } from "@/components/zenith/Logo";
-import { Check, UploadCloud, ChevronRight, Sparkles } from "lucide-react";
+import { Check, ChevronRight } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/hooks/use-auth";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/onboarding")({
   head: () => ({ meta: [{ title: "Set up your profile — Zenith" }, { name: "description", content: "Tell Zenith about your career goals to unlock personalized job discovery." }] }),
   component: Onboarding,
 });
 
-const STEPS = ["Personal Info", "Career Preferences", "Resume Upload"];
+const STEPS = ["Personal Info", "Career Preferences", "Resume Skills"];
 
 function Onboarding() {
   const nav = useNavigate();
+  const { user, loading: authLoading, profile, refreshProfile } = useAuth();
   const [step, setStep] = useState(0);
+  const [saving, setSaving] = useState(false);
   const [done, setDone] = useState(false);
+
+  const [form, setForm] = useState({
+    full_name: "",
+    phone: "",
+    linkedin: "",
+    portfolio: "",
+    preferred_role: "",
+    preferred_location: "",
+    remote: "Remote" as "Remote" | "Hybrid" | "Onsite" | "Any",
+    experience: "0–1 yr",
+    salary: "",
+    skills: "",
+  });
+
+  useEffect(() => {
+    if (!authLoading && !user) nav({ to: "/signup" });
+  }, [authLoading, user, nav]);
+
+  useEffect(() => {
+    if (profile) {
+      setForm((f) => ({
+        ...f,
+        full_name: profile.full_name ?? f.full_name,
+        phone: profile.phone ?? f.phone,
+        linkedin: profile.linkedin ?? f.linkedin,
+        portfolio: profile.portfolio ?? f.portfolio,
+        preferred_role: profile.preferred_role ?? f.preferred_role,
+        skills: (profile.resume_skills ?? []).join(", "),
+      }));
+    }
+  }, [profile]);
+
+  const save = async () => {
+    if (!user) return;
+    setSaving(true);
+    const { error } = await supabase
+      .from("profiles")
+      .update({
+        full_name: form.full_name,
+        phone: form.phone,
+        linkedin: form.linkedin,
+        portfolio: form.portfolio,
+        preferred_role: form.preferred_role,
+        resume_skills: form.skills.split(",").map((s) => s.trim()).filter(Boolean),
+      })
+      .eq("id", user.id);
+    setSaving(false);
+    if (error) { toast.error(error.message); return; }
+    await refreshProfile();
+    setDone(true);
+  };
 
   if (done) {
     return (
@@ -23,7 +79,7 @@ function Onboarding() {
             <Check className="h-7 w-7" strokeWidth={3} />
           </div>
           <h2 className="mt-4 text-2xl font-extrabold">You're all set!</h2>
-          <p className="mt-2 text-sm text-muted-foreground">Your ATS baseline is <span className="font-bold text-success">74</span>. We'll start finding jobs for you right away.</p>
+          <p className="mt-2 text-sm text-muted-foreground">Connect Firecrawl & Gmail next to start discovering real jobs and recruiter emails.</p>
           <button onClick={() => nav({ to: "/dashboard" })} className="mt-6 w-full rounded-lg bg-gradient-brand py-2.5 text-sm font-semibold text-white shadow-glow">
             Go to dashboard
           </button>
@@ -31,6 +87,8 @@ function Onboarding() {
       </div>
     );
   }
+
+  const set = <K extends keyof typeof form>(k: K, v: (typeof form)[K]) => setForm((f) => ({ ...f, [k]: v }));
 
   return (
     <div className="min-h-screen bg-background">
@@ -42,7 +100,6 @@ function Onboarding() {
       </header>
 
       <div className="mx-auto max-w-3xl px-4 py-10">
-        {/* Stepper */}
         <div className="mb-8 flex items-center gap-2">
           {STEPS.map((s, i) => (
             <div key={s} className="flex flex-1 items-center gap-2">
@@ -59,40 +116,35 @@ function Onboarding() {
           {step === 0 && (
             <Section title="Tell us about you" subtitle="Basics first. We use this for autofill later.">
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Full Name" placeholder="Aarav Sharma" />
-                <Field label="Email" type="email" placeholder="you@email.com" />
-                <Field label="Phone Number" placeholder="+91 90000 00000" />
-                <Field label="LinkedIn URL" placeholder="linkedin.com/in/you" />
-                <div className="sm:col-span-2"><Field label="Portfolio URL" placeholder="yoursite.com" /></div>
+                <Field label="Full Name" value={form.full_name} onChange={(e) => set("full_name", e.target.value)} placeholder="Your name" />
+                <Field label="Email" type="email" value={user?.email ?? ""} disabled />
+                <Field label="Phone Number" value={form.phone} onChange={(e) => set("phone", e.target.value)} placeholder="+91 90000 00000" />
+                <Field label="LinkedIn URL" value={form.linkedin} onChange={(e) => set("linkedin", e.target.value)} placeholder="linkedin.com/in/you" />
+                <div className="sm:col-span-2"><Field label="Portfolio URL" value={form.portfolio} onChange={(e) => set("portfolio", e.target.value)} placeholder="yoursite.com" /></div>
               </div>
             </Section>
           )}
           {step === 1 && (
             <Section title="Career preferences" subtitle="So we surface the right jobs.">
               <div className="grid gap-4 sm:grid-cols-2">
-                <Field label="Preferred Job Role" placeholder="Frontend Engineer" />
-                <Field label="Preferred Location" placeholder="Remote / Bangalore" />
-                <Select label="Remote / Hybrid / Onsite" options={["Remote", "Hybrid", "Onsite", "Any"]} />
-                <Select label="Experience Level" options={["Fresher", "0–1 yr", "1–3 yr", "3–5 yr", "5+ yr"]} />
-                <div className="sm:col-span-2"><Field label="Expected Salary Range" placeholder="₹15–25 LPA" /></div>
+                <Field label="Preferred Job Role" value={form.preferred_role} onChange={(e) => set("preferred_role", e.target.value)} placeholder="Frontend Engineer" />
+                <Field label="Preferred Location" value={form.preferred_location} onChange={(e) => set("preferred_location", e.target.value)} placeholder="Remote / Bangalore" />
+                <Select label="Remote / Hybrid / Onsite" value={form.remote} onChange={(e) => set("remote", e.target.value as typeof form.remote)} options={["Remote", "Hybrid", "Onsite", "Any"]} />
+                <Select label="Experience Level" value={form.experience} onChange={(e) => set("experience", e.target.value)} options={["Fresher", "0–1 yr", "1–3 yr", "3–5 yr", "5+ yr"]} />
+                <div className="sm:col-span-2"><Field label="Expected Salary Range" value={form.salary} onChange={(e) => set("salary", e.target.value)} placeholder="₹15–25 LPA" /></div>
               </div>
             </Section>
           )}
           {step === 2 && (
-            <Section title="Upload your resume" subtitle="We extract skills, projects, and set your ATS baseline.">
-              <label className="block cursor-pointer rounded-2xl border-2 border-dashed border-border bg-background p-10 text-center transition-colors hover:border-primary">
-                <UploadCloud className="mx-auto h-10 w-10 text-primary" />
-                <div className="mt-3 text-sm font-semibold">Drag & drop your PDF</div>
-                <div className="text-xs text-muted-foreground">or click to browse · max 10MB</div>
-                <input type="file" accept=".pdf" className="hidden" />
-              </label>
-              <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                {["Skills", "Projects", "Education", "Tools", "Certifications", "ATS Baseline"].map((t) => (
-                  <div key={t} className="flex items-center gap-2 rounded-lg border border-border bg-background p-3 text-sm">
-                    <Sparkles className="h-4 w-4 text-gold" /> Auto-extract <span className="font-semibold">{t}</span>
-                  </div>
-                ))}
-              </div>
+            <Section title="Your top skills" subtitle="Comma-separated. We use these to score jobs.">
+              <textarea
+                value={form.skills}
+                onChange={(e) => set("skills", e.target.value)}
+                rows={5}
+                placeholder="React, TypeScript, Node.js, GraphQL, PostgreSQL, AWS"
+                className="w-full rounded-lg border border-border bg-background p-3 text-sm outline-none focus:border-primary"
+              />
+              <p className="mt-2 text-xs text-muted-foreground">You can edit these any time in Settings.</p>
             </Section>
           )}
 
@@ -101,10 +153,11 @@ function Onboarding() {
               Back
             </button>
             <button
-              onClick={() => (step < STEPS.length - 1 ? setStep(step + 1) : setDone(true))}
-              className="inline-flex items-center gap-2 rounded-lg bg-gradient-brand px-5 py-2 text-sm font-semibold text-white shadow-glow"
+              onClick={() => (step < STEPS.length - 1 ? setStep(step + 1) : save())}
+              disabled={saving}
+              className="inline-flex items-center gap-2 rounded-lg bg-gradient-brand px-5 py-2 text-sm font-semibold text-white shadow-glow disabled:opacity-60"
             >
-              {step < STEPS.length - 1 ? "Continue" : "Finish setup"} <ChevronRight className="h-4 w-4" />
+              {step < STEPS.length - 1 ? "Continue" : saving ? "Saving…" : "Finish setup"} <ChevronRight className="h-4 w-4" />
             </button>
           </div>
         </div>
@@ -126,15 +179,15 @@ function Field({ label, ...rest }: { label: string } & React.InputHTMLAttributes
   return (
     <label className="block">
       <span className="text-xs font-semibold text-muted-foreground">{label}</span>
-      <input {...rest} className="mt-1 h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-none focus:border-primary" />
+      <input {...rest} className="mt-1 h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-none focus:border-primary disabled:opacity-60" />
     </label>
   );
 }
-function Select({ label, options }: { label: string; options: string[] }) {
+function Select({ label, options, ...rest }: { label: string; options: string[] } & React.SelectHTMLAttributes<HTMLSelectElement>) {
   return (
     <label className="block">
       <span className="text-xs font-semibold text-muted-foreground">{label}</span>
-      <select className="mt-1 h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-none focus:border-primary">
+      <select {...rest} className="mt-1 h-10 w-full rounded-lg border border-border bg-background px-3 text-sm outline-none focus:border-primary">
         {options.map((o) => <option key={o}>{o}</option>)}
       </select>
     </label>
