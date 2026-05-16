@@ -1,11 +1,13 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/zenith/AppShell";
 import { PageHeader } from "@/components/zenith/PageHeader";
-import { Mail, RefreshCw, CheckCircle2 } from "lucide-react";
+import { Mail, RefreshCw, CheckCircle2, Sparkles } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { listRecruiterEmails, syncRecruiterEmails, updateEmailReplyStatus } from "@/lib/gmail.functions";
+import { generateSuggestedReply, listRecruiterEmails, syncRecruiterEmails, updateEmailReplyStatus } from "@/lib/gmail.functions";
 import { toast } from "sonner";
+import { useRealtimeRefresh } from "@/hooks/use-realtime-refresh";
+import { useState } from "react";
 
 export const Route = createFileRoute("/recruiter-inbox")({
   head: () => ({ meta: [{ title: "Recruiter Inbox — Zenith" }] }),
@@ -25,6 +27,9 @@ function InboxPage() {
   const listFn = useServerFn(listRecruiterEmails);
   const syncFn = useServerFn(syncRecruiterEmails);
   const updFn = useServerFn(updateEmailReplyStatus);
+  const replyFn = useServerFn(generateSuggestedReply);
+  const [reply, setReply] = useState<Record<string, string>>({});
+  useRealtimeRefresh(["recruiter_emails", "applications", "calendar_events"], [["emails"], ["applications"], ["events"], ["dashboard-stats"]]);
 
   const emails = useQuery({ queryKey: ["emails"], queryFn: () => listFn() });
   const sync = useMutation({
@@ -35,6 +40,11 @@ function InboxPage() {
   const upd = useMutation({
     mutationFn: (v: { id: string; status: any }) => updFn({ data: v }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["emails"] }),
+  });
+  const suggested = useMutation({
+    mutationFn: (id: string) => replyFn({ data: { emailId: id } }),
+    onSuccess: (r, id) => setReply((prev) => ({ ...prev, [id]: r.reply })),
+    onError: (e: any) => toast.error(e.message ?? "Could not generate reply"),
   });
 
   const items = emails.data?.emails ?? [];
@@ -51,12 +61,15 @@ function InboxPage() {
         }
       />
 
-      {emails.isLoading ? (
+      {emails.isError ? (
+        <div className="rounded-2xl border-2 border-dashed border-border bg-card p-12 text-center"><div className="text-lg font-bold">Recruiter inbox could not load</div><p className="mt-1 text-sm text-muted-foreground">Reconnect Gmail or try syncing again.</p></div>
+      ) : emails.isLoading ? (
         <div className="space-y-3">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-32 animate-pulse rounded-2xl bg-muted/40" />)}</div>
       ) : items.length === 0 ? (
         <div className="rounded-2xl border-2 border-dashed border-border bg-card p-12 text-center">
-          <div className="text-lg font-bold">No recruiter emails yet</div>
-          <p className="mt-1 text-sm text-muted-foreground">Click "Sync Gmail" to import and auto-classify recent recruiter emails.</p>
+          <div className="text-lg font-bold">📧 No recruiter emails yet</div>
+          <p className="mt-1 text-sm text-muted-foreground">Connect your Gmail account to automatically monitor recruiter replies and interview invites.</p>
+          <button onClick={() => sync.mutate()} className="mt-4 rounded-lg bg-gradient-brand px-4 py-2 text-sm font-semibold text-white shadow-glow">Connect Gmail / Sync now</button>
         </div>
       ) : (
         <div className="grid gap-4">
@@ -76,10 +89,12 @@ function InboxPage() {
                   </div>
                   <p className="mt-2 text-sm text-muted-foreground">{e.preview}</p>
                   <div className="mt-4 flex flex-wrap gap-2">
-                    <button onClick={() => upd.mutate({ id: e.id, status: "replied" })} className="inline-flex items-center gap-1 rounded-lg bg-gradient-brand px-3 py-1.5 text-xs font-semibold text-white shadow-glow"><Mail className="h-3.5 w-3.5" /> Mark replied</button>
+                    <button onClick={() => suggested.mutate(e.id)} className="inline-flex items-center gap-1 rounded-lg bg-gradient-brand px-3 py-1.5 text-xs font-semibold text-white shadow-glow"><Sparkles className="h-3.5 w-3.5" /> Suggested reply</button>
+                    <button onClick={() => upd.mutate({ id: e.id, status: "replied" })} className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-xs font-semibold hover:bg-accent"><Mail className="h-3.5 w-3.5" /> Mark replied</button>
                     <button onClick={() => upd.mutate({ id: e.id, status: "handled" })} className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-xs font-semibold hover:bg-accent"><CheckCircle2 className="h-3.5 w-3.5" /> Mark handled</button>
                     <span className="ml-auto text-[10px] font-bold uppercase text-muted-foreground">{e.reply_status}</span>
                   </div>
+                  {reply[e.id] && <pre className="mt-3 whitespace-pre-wrap rounded-xl border border-border bg-background p-3 text-xs text-muted-foreground">{reply[e.id]}</pre>}
                 </div>
               </div>
             </div>
