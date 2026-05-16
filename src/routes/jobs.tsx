@@ -8,6 +8,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { listJobs, scrapeJobs, saveJob } from "@/lib/jobs.functions";
 import { toast } from "sonner";
+import { useRealtimeRefresh } from "@/hooks/use-realtime-refresh";
 
 export const Route = createFileRoute("/jobs")({
   head: () => ({ meta: [{ title: "Jobs — Zenith" }] }),
@@ -19,6 +20,7 @@ function JobsPage() {
   const listFn = useServerFn(listJobs);
   const scrapeFn = useServerFn(scrapeJobs);
   const saveFn = useServerFn(saveJob);
+  useRealtimeRefresh(["jobs", "applications"], [["jobs"], ["applications"], ["dashboard-stats"]]);
 
   const [minATS, setMinATS] = useState(0);
   const [remoteOnly, setRemoteOnly] = useState(false);
@@ -48,7 +50,7 @@ function JobsPage() {
         description={`${items.length} matches`}
         actions={
           <button
-            onClick={() => scrape.mutate(query || "frontend engineer")}
+            onClick={() => scrape.mutate(query || "software engineer remote")}
             disabled={scrape.isPending}
             className="inline-flex items-center gap-2 rounded-lg bg-gradient-brand px-4 py-2 text-sm font-semibold text-white shadow-glow disabled:opacity-60"
           >
@@ -65,7 +67,7 @@ function JobsPage() {
             onChange={(e) => setQuery(e.target.value)}
             placeholder="e.g. backend engineer remote"
             className="w-full bg-transparent text-sm outline-none"
-            onKeyDown={(e) => { if (e.key === "Enter") scrape.mutate(query || "frontend engineer"); }}
+            onKeyDown={(e) => { if (e.key === "Enter") scrape.mutate(query || "software engineer remote"); }}
           />
         </div>
         <label className="flex items-center gap-2 text-xs font-semibold">
@@ -78,12 +80,15 @@ function JobsPage() {
         </div>
       </div>
 
-      {jobs.isLoading ? (
+      {jobs.isError ? (
+        <div className="rounded-2xl border-2 border-dashed border-border bg-card p-12 text-center"><div className="text-lg font-bold">Jobs could not load</div><p className="mt-1 text-sm text-muted-foreground">Reconnect Firecrawl or try again.</p></div>
+      ) : jobs.isLoading ? (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{Array.from({ length: 6 }).map((_, i) => <div key={i} className="h-56 animate-pulse rounded-2xl bg-muted/40" />)}</div>
       ) : items.length === 0 ? (
         <div className="rounded-2xl border-2 border-dashed border-border bg-card p-12 text-center">
-          <div className="text-lg font-bold">No jobs yet</div>
-          <p className="mt-1 text-sm text-muted-foreground">Click "Scrape jobs" to discover roles across LinkedIn, YC, Wellfound, Internshala.</p>
+          <div className="text-lg font-bold">🔍 No jobs loaded yet</div>
+          <p className="mt-1 text-sm text-muted-foreground">Connect Firecrawl to automatically discover real jobs matching your profile every 6 hours.</p>
+          <button onClick={() => scrape.mutate(query || "software engineer remote")} className="mt-4 rounded-lg bg-gradient-brand px-4 py-2 text-sm font-semibold text-white shadow-glow">Connect Firecrawl / Refresh</button>
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">

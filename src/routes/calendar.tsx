@@ -6,6 +6,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { listEvents, syncCalendar } from "@/lib/calendar.functions";
 import { toast } from "sonner";
+import { useRealtimeRefresh } from "@/hooks/use-realtime-refresh";
 
 export const Route = createFileRoute("/calendar")({
   head: () => ({ meta: [{ title: "Calendar — Zenith" }] }),
@@ -16,6 +17,7 @@ function CalendarPage() {
   const qc = useQueryClient();
   const listFn = useServerFn(listEvents);
   const syncFn = useServerFn(syncCalendar);
+  useRealtimeRefresh(["calendar_events", "applications"], [["events"], ["applications"], ["dashboard-stats"]]);
   const events = useQuery({ queryKey: ["events"], queryFn: () => listFn() });
   const sync = useMutation({
     mutationFn: () => syncFn(),
@@ -36,11 +38,11 @@ function CalendarPage() {
           </button>
         }
       />
-      {events.isLoading ? <div className="h-64 animate-pulse rounded-2xl bg-muted/40" /> : items.length === 0 ? (
+      {events.isError ? <div className="rounded-2xl border-2 border-dashed border-border bg-card p-12 text-center"><div className="text-lg font-bold">Calendar could not load</div><p className="text-sm text-muted-foreground">Reconnect Google Calendar or try again.</p></div> : events.isLoading ? <div className="h-64 animate-pulse rounded-2xl bg-muted/40" /> : items.length === 0 ? (
         <div className="rounded-2xl border-2 border-dashed border-border bg-card p-12 text-center">
           <CalIcon className="mx-auto h-8 w-8 text-muted-foreground" />
-          <div className="mt-2 text-lg font-bold">No events yet</div>
-          <p className="text-sm text-muted-foreground">Click "Sync calendar" to pull upcoming events from Google Calendar.</p>
+          <div className="mt-2 text-lg font-bold">📅 No interviews scheduled yet</div>
+          <p className="text-sm text-muted-foreground">When recruiters send interview invites to your Gmail, they'll automatically appear here! 💪 Keep applying — they're coming!</p>
         </div>
       ) : (
         <div className="space-y-3">

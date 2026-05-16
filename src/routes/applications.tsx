@@ -7,6 +7,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { listApplications, createApplication, updateApplicationStatus, deleteApplication } from "@/lib/applications.functions";
 import { toast } from "sonner";
+import { useRealtimeRefresh } from "@/hooks/use-realtime-refresh";
 
 export const Route = createFileRoute("/applications")({
   head: () => ({ meta: [{ title: "Applications — Zenith" }] }),
@@ -29,6 +30,7 @@ function ApplicationsPage() {
   const createFn = useServerFn(createApplication);
   const updFn = useServerFn(updateApplicationStatus);
   const delFn = useServerFn(deleteApplication);
+  useRealtimeRefresh(["applications"], [["applications"], ["dashboard-stats"]]);
 
   const apps = useQuery({ queryKey: ["applications"], queryFn: () => listFn() });
   const [view, setView] = useState<"kanban" | "list">("kanban");
@@ -75,12 +77,14 @@ function ApplicationsPage() {
         </form>
       )}
 
-      {apps.isLoading ? (
+      {apps.isError ? (
+        <div className="rounded-2xl border-2 border-dashed border-border bg-card p-12 text-center"><div className="text-lg font-bold">Applications could not load</div><p className="mt-1 text-sm text-muted-foreground">Please refresh and try again.</p></div>
+      ) : apps.isLoading ? (
         <div className="h-64 animate-pulse rounded-2xl bg-muted/40" />
       ) : items.length === 0 ? (
         <div className="rounded-2xl border-2 border-dashed border-border bg-card p-12 text-center">
-          <div className="text-lg font-bold">No applications yet</div>
-          <p className="mt-1 text-sm text-muted-foreground">Save a job from the Jobs page or add one manually.</p>
+          <div className="text-lg font-bold">📋 No applications yet!</div>
+          <p className="mt-1 text-sm text-muted-foreground">Browse jobs and click Apply to track your first application.</p>
         </div>
       ) : view === "kanban" ? (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">

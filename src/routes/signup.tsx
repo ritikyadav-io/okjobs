@@ -30,13 +30,14 @@ function SignupPage() {
     });
     setLoading(false);
     if (error) { toast.error(error.message); return; }
-    toast.success("Account created! Let's set you up.");
-    nav({ to: "/onboarding" });
+    toast.success("Account created. Check your email to verify your account, then log in.");
+    nav({ to: "/login" });
   };
 
   const onGoogle = async () => {
-    const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin + "/onboarding" });
-    if (result.error) toast.error(result.error.message ?? "Google sign-in failed");
+    const result = await lovable.auth.signInWithOAuth("google", { redirect_uri: window.location.origin });
+    if (result.error) { toast.error(result.error.message ?? "Google sign-in failed"); return; }
+    if (!result.redirected) nav({ to: "/onboarding" });
   };
 
   return (

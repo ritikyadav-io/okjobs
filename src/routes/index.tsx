@@ -37,12 +37,6 @@ const PLANS = [
   { name: "Premium", price: "₹999", tag: "For power users", featured: false, features: ["Everything in Pro", "Google Sheets export", "Resume version history", "Advanced analytics", "Interview prep checklist", "Salary insights", "Priority support"] },
 ];
 
-const TESTIMONIALS = [
-  { name: "Aarav S.", role: "CS Senior, IIT-B", quote: "Got 4 interviews in 2 weeks. The daily briefing is my morning ritual." },
-  { name: "Priya N.", role: "Frontend, BITS", quote: "ATS score went from 62 → 88 on my dream company. Got the offer." },
-  { name: "Rohit K.", role: "Fresher, NIT-T", quote: "Zenith found jobs I would never have seen. Worth every rupee." },
-];
-
 function Landing() {
   return (
     <div className="min-h-screen bg-background text-foreground">
@@ -87,20 +81,8 @@ function Landing() {
             </a>
           </div>
 
-          {/* preview card */}
-          <div className="mx-auto mt-16 max-w-5xl rounded-2xl border-2 border-border bg-card p-2 shadow-glow">
-            <div className="grid gap-3 rounded-xl bg-background p-4 md:grid-cols-3">
-              {[
-                { l: "Applications", v: "47", c: "text-primary" },
-                { l: "Interviews", v: "6", c: "text-cyan" },
-                { l: "Avg ATS", v: "84%", c: "text-success" },
-              ].map((s) => (
-                <div key={s.l} className="rounded-lg border border-border bg-card p-4 text-left">
-                  <div className="text-xs uppercase text-muted-foreground">{s.l}</div>
-                  <div className={`mt-1 text-3xl font-extrabold ${s.c}`}>{s.v}</div>
-                </div>
-              ))}
-            </div>
+          <div className="mx-auto mt-16 max-w-3xl rounded-2xl border-2 border-border bg-card p-6 text-sm text-muted-foreground shadow-glow">
+            Your live dashboard fills with real applications, recruiter emails, interviews, and follow-ups after you sign in.
           </div>
         </div>
       </section>
@@ -189,29 +171,6 @@ function Landing() {
               </Link>
             </div>
           ))}
-        </div>
-      </section>
-
-      {/* TESTIMONIALS */}
-      <section className="border-t border-border bg-card/50">
-        <div className="mx-auto max-w-6xl px-4 py-20">
-          <h2 className="text-center text-4xl font-extrabold tracking-tight md:text-5xl">Loved by job seekers</h2>
-          <div className="mt-12 grid gap-5 md:grid-cols-3">
-            {TESTIMONIALS.map((t) => (
-              <div key={t.name} className="rounded-2xl border-2 border-border bg-background p-6">
-                <p className="text-sm">"{t.quote}"</p>
-                <div className="mt-4 flex items-center gap-3">
-                  <div className="grid h-10 w-10 place-items-center rounded-full bg-gradient-warm font-bold text-white">
-                    {t.name[0]}
-                  </div>
-                  <div>
-                    <div className="text-sm font-semibold">{t.name}</div>
-                    <div className="text-xs text-muted-foreground">{t.role}</div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
         </div>
       </section>
 
