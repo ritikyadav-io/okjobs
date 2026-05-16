@@ -14,7 +14,362 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      applications: {
+        Row: {
+          applied_at: string | null
+          ats_score: number | null
+          company: string
+          created_at: string
+          followup_date: string | null
+          followup_sent: boolean | null
+          id: string
+          interview_at: string | null
+          job_id: string | null
+          notes: string | null
+          status: string
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          applied_at?: string | null
+          ats_score?: number | null
+          company: string
+          created_at?: string
+          followup_date?: string | null
+          followup_sent?: boolean | null
+          id?: string
+          interview_at?: string | null
+          job_id?: string | null
+          notes?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          applied_at?: string | null
+          ats_score?: number | null
+          company?: string
+          created_at?: string
+          followup_date?: string | null
+          followup_sent?: boolean | null
+          id?: string
+          interview_at?: string | null
+          job_id?: string | null
+          notes?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "applications_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      calendar_events: {
+        Row: {
+          application_id: string | null
+          created_at: string
+          ends_at: string | null
+          google_event_id: string | null
+          id: string
+          starts_at: string
+          title: string
+          user_id: string
+        }
+        Insert: {
+          application_id?: string | null
+          created_at?: string
+          ends_at?: string | null
+          google_event_id?: string | null
+          id?: string
+          starts_at: string
+          title: string
+          user_id: string
+        }
+        Update: {
+          application_id?: string | null
+          created_at?: string
+          ends_at?: string | null
+          google_event_id?: string | null
+          id?: string
+          starts_at?: string
+          title?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "calendar_events_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cover_letter_versions: {
+        Row: {
+          application_id: string | null
+          content: string | null
+          created_at: string
+          google_doc_id: string | null
+          google_doc_url: string | null
+          id: string
+          user_id: string
+          version: number
+        }
+        Insert: {
+          application_id?: string | null
+          content?: string | null
+          created_at?: string
+          google_doc_id?: string | null
+          google_doc_url?: string | null
+          id?: string
+          user_id: string
+          version?: number
+        }
+        Update: {
+          application_id?: string | null
+          content?: string | null
+          created_at?: string
+          google_doc_id?: string | null
+          google_doc_url?: string | null
+          id?: string
+          user_id?: string
+          version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cover_letter_versions_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      daily_briefings: {
+        Row: {
+          created_at: string
+          data: Json
+          date: string
+          id: string
+          sent_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          data?: Json
+          date?: string
+          id?: string
+          sent_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          data?: Json
+          date?: string
+          id?: string
+          sent_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      jobs: {
+        Row: {
+          ats_score: number | null
+          company: string
+          competition: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          location: string | null
+          posted_at: string | null
+          recommendation: string | null
+          remote: string | null
+          salary: string | null
+          scraped_at: string
+          source: string | null
+          title: string
+          url: string
+        }
+        Insert: {
+          ats_score?: number | null
+          company: string
+          competition?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          location?: string | null
+          posted_at?: string | null
+          recommendation?: string | null
+          remote?: string | null
+          salary?: string | null
+          scraped_at?: string
+          source?: string | null
+          title: string
+          url: string
+        }
+        Update: {
+          ats_score?: number | null
+          company?: string
+          competition?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          location?: string | null
+          posted_at?: string | null
+          recommendation?: string | null
+          remote?: string | null
+          salary?: string | null
+          scraped_at?: string
+          source?: string | null
+          title?: string
+          url?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          linkedin: string | null
+          phone: string | null
+          plan: string | null
+          portfolio: string | null
+          preferred_role: string | null
+          resume_skills: string[] | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+          linkedin?: string | null
+          phone?: string | null
+          plan?: string | null
+          portfolio?: string | null
+          preferred_role?: string | null
+          resume_skills?: string[] | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          linkedin?: string | null
+          phone?: string | null
+          plan?: string | null
+          portfolio?: string | null
+          preferred_role?: string | null
+          resume_skills?: string[] | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      recruiter_emails: {
+        Row: {
+          application_id: string | null
+          body: string | null
+          company: string | null
+          created_at: string
+          gmail_message_id: string | null
+          id: string
+          preview: string | null
+          received_at: string
+          reply_status: string
+          sender: string | null
+          subject: string | null
+          type: string | null
+          user_id: string
+        }
+        Insert: {
+          application_id?: string | null
+          body?: string | null
+          company?: string | null
+          created_at?: string
+          gmail_message_id?: string | null
+          id?: string
+          preview?: string | null
+          received_at?: string
+          reply_status?: string
+          sender?: string | null
+          subject?: string | null
+          type?: string | null
+          user_id: string
+        }
+        Update: {
+          application_id?: string | null
+          body?: string | null
+          company?: string | null
+          created_at?: string
+          gmail_message_id?: string | null
+          id?: string
+          preview?: string | null
+          received_at?: string
+          reply_status?: string
+          sender?: string | null
+          subject?: string | null
+          type?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recruiter_emails_application_id_fkey"
+            columns: ["application_id"]
+            isOneToOne: false
+            referencedRelation: "applications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      resume_versions: {
+        Row: {
+          ats_score: number | null
+          content: string | null
+          created_at: string
+          google_doc_id: string | null
+          google_doc_url: string | null
+          id: string
+          title: string
+          user_id: string
+          version: number
+        }
+        Insert: {
+          ats_score?: number | null
+          content?: string | null
+          created_at?: string
+          google_doc_id?: string | null
+          google_doc_url?: string | null
+          id?: string
+          title?: string
+          user_id: string
+          version?: number
+        }
+        Update: {
+          ats_score?: number | null
+          content?: string | null
+          created_at?: string
+          google_doc_id?: string | null
+          google_doc_url?: string | null
+          id?: string
+          title?: string
+          user_id?: string
+          version?: number
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
