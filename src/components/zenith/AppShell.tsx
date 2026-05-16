@@ -1,4 +1,4 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import {
   Home,
   Briefcase,
@@ -13,9 +13,11 @@ import {
   Bell,
   type LucideIcon,
 } from "lucide-react";
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import { Logo } from "./Logo";
 import { ThemeToggle } from "./ThemeToggle";
+import { useAuth } from "@/hooks/use-auth";
+import { toast } from "sonner";
 
 type NavItem = { to: string; label: string; icon: LucideIcon; color: string };
 
@@ -32,6 +34,29 @@ const NAV: NavItem[] = [
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { user, loading, profile, signOut } = useAuth();
+  const nav = useNavigate();
+
+  useEffect(() => {
+    if (!loading && !user) nav({ to: "/login" });
+  }, [loading, user, nav]);
+
+  if (loading || !user) {
+    return (
+      <div className="grid min-h-screen place-items-center bg-background">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary/30 border-t-primary" />
+      </div>
+    );
+  }
+
+  const displayName = profile?.full_name || user.email?.split("@")[0] || "You";
+  const initial = (displayName[0] || "Z").toUpperCase();
+
+  const handleLogout = async () => {
+    await signOut();
+    toast.success("Signed out");
+    nav({ to: "/login" });
+  };
 
   return (
     <div className="flex min-h-screen w-full bg-background text-foreground">
@@ -61,22 +86,22 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="mt-4 rounded-xl border border-border bg-card p-3">
           <div className="flex items-center gap-3">
             <div className="grid h-9 w-9 place-items-center rounded-full bg-gradient-warm font-bold text-white">
-              Z
+              {initial}
             </div>
             <div className="min-w-0 flex-1">
-              <div className="truncate text-sm font-semibold">You</div>
-              <div className="truncate text-xs text-muted-foreground">Free plan</div>
+              <div className="truncate text-sm font-semibold">{displayName}</div>
+              <div className="truncate text-xs text-muted-foreground">{profile?.plan || "Free"} plan</div>
             </div>
           </div>
           <div className="mt-3 flex items-center justify-between">
             <ThemeToggle />
-            <Link
-              to="/login"
+            <button
+              onClick={handleLogout}
               className="grid h-9 w-9 place-items-center rounded-lg border border-border text-muted-foreground hover:bg-accent"
               aria-label="Log out"
             >
               <LogOut className="h-4 w-4" />
-            </Link>
+            </button>
           </div>
         </div>
       </aside>
@@ -98,7 +123,6 @@ export function AppShell({ children }: { children: ReactNode }) {
             className="relative grid h-9 w-9 place-items-center rounded-lg border border-border bg-card hover:bg-accent"
           >
             <Bell className="h-4 w-4" />
-            <span className="absolute right-1.5 top-1.5 h-2 w-2 rounded-full bg-secondary" />
           </button>
           <div className="hidden md:block">
             <ThemeToggle />
