@@ -22,6 +22,9 @@ import { Route as CalendarRouteImport } from './routes/calendar'
 import { Route as BriefingRouteImport } from './routes/briefing'
 import { Route as ApplicationsRouteImport } from './routes/applications'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ApiPublicCronScrapeJobsRouteImport } from './routes/api/public/cron/scrape-jobs'
+import { Route as ApiPublicCronGmailSyncRouteImport } from './routes/api/public/cron/gmail-sync'
+import { Route as ApiPublicCronDailyBriefingRouteImport } from './routes/api/public/cron/daily-briefing'
 
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
@@ -88,6 +91,22 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCronScrapeJobsRoute = ApiPublicCronScrapeJobsRouteImport.update({
+  id: '/api/public/cron/scrape-jobs',
+  path: '/api/public/cron/scrape-jobs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicCronGmailSyncRoute = ApiPublicCronGmailSyncRouteImport.update({
+  id: '/api/public/cron/gmail-sync',
+  path: '/api/public/cron/gmail-sync',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicCronDailyBriefingRoute =
+  ApiPublicCronDailyBriefingRouteImport.update({
+    id: '/api/public/cron/daily-briefing',
+    path: '/api/public/cron/daily-briefing',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -103,6 +122,9 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/api/public/cron/daily-briefing': typeof ApiPublicCronDailyBriefingRoute
+  '/api/public/cron/gmail-sync': typeof ApiPublicCronGmailSyncRoute
+  '/api/public/cron/scrape-jobs': typeof ApiPublicCronScrapeJobsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -118,6 +140,9 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/api/public/cron/daily-briefing': typeof ApiPublicCronDailyBriefingRoute
+  '/api/public/cron/gmail-sync': typeof ApiPublicCronGmailSyncRoute
+  '/api/public/cron/scrape-jobs': typeof ApiPublicCronScrapeJobsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -134,6 +159,9 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/api/public/cron/daily-briefing': typeof ApiPublicCronDailyBriefingRoute
+  '/api/public/cron/gmail-sync': typeof ApiPublicCronGmailSyncRoute
+  '/api/public/cron/scrape-jobs': typeof ApiPublicCronScrapeJobsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -151,6 +179,9 @@ export interface FileRouteTypes {
     | '/settings'
     | '/signup'
     | '/sitemap.xml'
+    | '/api/public/cron/daily-briefing'
+    | '/api/public/cron/gmail-sync'
+    | '/api/public/cron/scrape-jobs'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -166,6 +197,9 @@ export interface FileRouteTypes {
     | '/settings'
     | '/signup'
     | '/sitemap.xml'
+    | '/api/public/cron/daily-briefing'
+    | '/api/public/cron/gmail-sync'
+    | '/api/public/cron/scrape-jobs'
   id:
     | '__root__'
     | '/'
@@ -181,6 +215,9 @@ export interface FileRouteTypes {
     | '/settings'
     | '/signup'
     | '/sitemap.xml'
+    | '/api/public/cron/daily-briefing'
+    | '/api/public/cron/gmail-sync'
+    | '/api/public/cron/scrape-jobs'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -197,6 +234,9 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute
   SignupRoute: typeof SignupRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  ApiPublicCronDailyBriefingRoute: typeof ApiPublicCronDailyBriefingRoute
+  ApiPublicCronGmailSyncRoute: typeof ApiPublicCronGmailSyncRoute
+  ApiPublicCronScrapeJobsRoute: typeof ApiPublicCronScrapeJobsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -292,6 +332,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cron/scrape-jobs': {
+      id: '/api/public/cron/scrape-jobs'
+      path: '/api/public/cron/scrape-jobs'
+      fullPath: '/api/public/cron/scrape-jobs'
+      preLoaderRoute: typeof ApiPublicCronScrapeJobsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/cron/gmail-sync': {
+      id: '/api/public/cron/gmail-sync'
+      path: '/api/public/cron/gmail-sync'
+      fullPath: '/api/public/cron/gmail-sync'
+      preLoaderRoute: typeof ApiPublicCronGmailSyncRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/cron/daily-briefing': {
+      id: '/api/public/cron/daily-briefing'
+      path: '/api/public/cron/daily-briefing'
+      fullPath: '/api/public/cron/daily-briefing'
+      preLoaderRoute: typeof ApiPublicCronDailyBriefingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -309,7 +370,20 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   SignupRoute: SignupRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  ApiPublicCronDailyBriefingRoute: ApiPublicCronDailyBriefingRoute,
+  ApiPublicCronGmailSyncRoute: ApiPublicCronGmailSyncRoute,
+  ApiPublicCronScrapeJobsRoute: ApiPublicCronScrapeJobsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}
