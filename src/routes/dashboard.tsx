@@ -9,6 +9,7 @@ import { dashboardStats, listApplications } from "@/lib/applications.functions";
 import { listJobs } from "@/lib/jobs.functions";
 import { listRecruiterEmails } from "@/lib/gmail.functions";
 import { useAuth } from "@/hooks/use-auth";
+import { useRealtimeRefresh } from "@/hooks/use-realtime-refresh";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({ meta: [{ title: "Dashboard — Zenith" }, { name: "description", content: "Your job search command center." }] }),
@@ -27,6 +28,7 @@ function Dashboard() {
   const jobsFn = useServerFn(listJobs);
   const emailsFn = useServerFn(listRecruiterEmails);
   const appsFn = useServerFn(listApplications);
+  useRealtimeRefresh(["applications", "jobs", "recruiter_emails", "calendar_events", "daily_briefings"], [["dashboard-stats"], ["jobs"], ["emails"], ["applications"], ["briefing"]]);
 
   const stats = useQuery({ queryKey: ["dashboard-stats"], queryFn: () => statsFn() });
   const jobs = useQuery({ queryKey: ["jobs"], queryFn: () => jobsFn() });
@@ -62,8 +64,8 @@ function Dashboard() {
             <h3 className="text-lg font-bold">Matched today</h3>
             <Link to="/jobs" className="text-xs font-semibold text-primary">See all →</Link>
           </div>
-          {jobs.isLoading ? <Skel n={3} /> : (jobs.data?.jobs.length ?? 0) === 0 ? (
-            <Empty title="No jobs yet" hint="Go to Jobs and run a scrape to discover roles." />
+          {jobs.isError ? <Empty title="Jobs could not load" hint="Please refresh or reconnect Firecrawl." /> : jobs.isLoading ? <Skel n={3} /> : (jobs.data?.jobs.length ?? 0) === 0 ? (
+            <Empty title="👋 Welcome to Zenith!" hint="Start by browsing jobs and submitting your first application!" />
           ) : (
             <div className="space-y-3">
               {jobs.data!.jobs.slice(0, 4).map((j: any) => (
@@ -104,8 +106,8 @@ function Dashboard() {
             <h3 className="text-lg font-bold">Recruiter inbox</h3>
             <Link to="/recruiter-inbox" className="text-xs font-semibold text-primary">Open inbox →</Link>
           </div>
-          {emails.isLoading ? <Skel n={3} /> : (emails.data?.emails.length ?? 0) === 0 ? (
-            <Empty title="Inbox empty" hint="Sync Gmail from the Recruiter Inbox page." />
+          {emails.isError ? <Empty title="Inbox could not load" hint="Please refresh or reconnect Gmail." /> : emails.isLoading ? <Skel n={3} /> : (emails.data?.emails.length ?? 0) === 0 ? (
+            <Empty title="📧 No recruiter emails yet" hint="Connect Gmail from the Recruiter Inbox page to monitor recruiter replies." />
           ) : (
             <div className="space-y-3">
               {emails.data!.emails.slice(0, 3).map((e: any) => (
