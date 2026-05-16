@@ -30,7 +30,7 @@ function BriefingPage() {
     onError: (e: any) => toast.error(e.message),
   });
 
-  const d = briefing.data?.briefing?.data ?? null;
+  const d = (briefing.data?.briefing?.data ?? null) as any;
 
   return (
     <AppShell>
