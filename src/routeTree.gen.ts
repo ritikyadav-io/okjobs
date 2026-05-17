@@ -9,23 +9,32 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ResumeLabRouteImport } from './routes/resume-lab'
 import { Route as RecruiterInboxRouteImport } from './routes/recruiter-inbox'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as JobsRouteImport } from './routes/jobs'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CalendarRouteImport } from './routes/calendar'
 import { Route as BriefingRouteImport } from './routes/briefing'
+import { Route as BlogRouteImport } from './routes/blog'
 import { Route as ApplicationsRouteImport } from './routes/applications'
+import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiPublicCronScrapeJobsRouteImport } from './routes/api/public/cron/scrape-jobs'
 import { Route as ApiPublicCronGmailSyncRouteImport } from './routes/api/public/cron/gmail-sync'
 import { Route as ApiPublicCronDailyBriefingRouteImport } from './routes/api/public/cron/daily-briefing'
 
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
@@ -49,6 +58,11 @@ const ResumeLabRoute = ResumeLabRouteImport.update({
 const RecruiterInboxRoute = RecruiterInboxRouteImport.update({
   id: '/recruiter-inbox',
   path: '/recruiter-inbox',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OnboardingRoute = OnboardingRouteImport.update({
@@ -81,9 +95,19 @@ const BriefingRoute = BriefingRouteImport.update({
   path: '/briefing',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BlogRoute = BlogRouteImport.update({
+  id: '/blog',
+  path: '/blog',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApplicationsRoute = ApplicationsRouteImport.update({
   id: '/applications',
   path: '/applications',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AboutRoute = AboutRouteImport.update({
+  id: '/about',
+  path: '/about',
   getParentRoute: () => rootRouteImport,
 } as any)
 const IndexRoute = IndexRouteImport.update({
@@ -110,36 +134,44 @@ const ApiPublicCronDailyBriefingRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/applications': typeof ApplicationsRoute
+  '/blog': typeof BlogRoute
   '/briefing': typeof BriefingRoute
   '/calendar': typeof CalendarRoute
   '/dashboard': typeof DashboardRoute
   '/jobs': typeof JobsRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
+  '/privacy': typeof PrivacyRoute
   '/recruiter-inbox': typeof RecruiterInboxRoute
   '/resume-lab': typeof ResumeLabRoute
   '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/terms': typeof TermsRoute
   '/api/public/cron/daily-briefing': typeof ApiPublicCronDailyBriefingRoute
   '/api/public/cron/gmail-sync': typeof ApiPublicCronGmailSyncRoute
   '/api/public/cron/scrape-jobs': typeof ApiPublicCronScrapeJobsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/applications': typeof ApplicationsRoute
+  '/blog': typeof BlogRoute
   '/briefing': typeof BriefingRoute
   '/calendar': typeof CalendarRoute
   '/dashboard': typeof DashboardRoute
   '/jobs': typeof JobsRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
+  '/privacy': typeof PrivacyRoute
   '/recruiter-inbox': typeof RecruiterInboxRoute
   '/resume-lab': typeof ResumeLabRoute
   '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/terms': typeof TermsRoute
   '/api/public/cron/daily-briefing': typeof ApiPublicCronDailyBriefingRoute
   '/api/public/cron/gmail-sync': typeof ApiPublicCronGmailSyncRoute
   '/api/public/cron/scrape-jobs': typeof ApiPublicCronScrapeJobsRoute
@@ -147,18 +179,22 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/about': typeof AboutRoute
   '/applications': typeof ApplicationsRoute
+  '/blog': typeof BlogRoute
   '/briefing': typeof BriefingRoute
   '/calendar': typeof CalendarRoute
   '/dashboard': typeof DashboardRoute
   '/jobs': typeof JobsRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
+  '/privacy': typeof PrivacyRoute
   '/recruiter-inbox': typeof RecruiterInboxRoute
   '/resume-lab': typeof ResumeLabRoute
   '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/terms': typeof TermsRoute
   '/api/public/cron/daily-briefing': typeof ApiPublicCronDailyBriefingRoute
   '/api/public/cron/gmail-sync': typeof ApiPublicCronGmailSyncRoute
   '/api/public/cron/scrape-jobs': typeof ApiPublicCronScrapeJobsRoute
@@ -167,54 +203,66 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/about'
     | '/applications'
+    | '/blog'
     | '/briefing'
     | '/calendar'
     | '/dashboard'
     | '/jobs'
     | '/login'
     | '/onboarding'
+    | '/privacy'
     | '/recruiter-inbox'
     | '/resume-lab'
     | '/settings'
     | '/signup'
     | '/sitemap.xml'
+    | '/terms'
     | '/api/public/cron/daily-briefing'
     | '/api/public/cron/gmail-sync'
     | '/api/public/cron/scrape-jobs'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/about'
     | '/applications'
+    | '/blog'
     | '/briefing'
     | '/calendar'
     | '/dashboard'
     | '/jobs'
     | '/login'
     | '/onboarding'
+    | '/privacy'
     | '/recruiter-inbox'
     | '/resume-lab'
     | '/settings'
     | '/signup'
     | '/sitemap.xml'
+    | '/terms'
     | '/api/public/cron/daily-briefing'
     | '/api/public/cron/gmail-sync'
     | '/api/public/cron/scrape-jobs'
   id:
     | '__root__'
     | '/'
+    | '/about'
     | '/applications'
+    | '/blog'
     | '/briefing'
     | '/calendar'
     | '/dashboard'
     | '/jobs'
     | '/login'
     | '/onboarding'
+    | '/privacy'
     | '/recruiter-inbox'
     | '/resume-lab'
     | '/settings'
     | '/signup'
     | '/sitemap.xml'
+    | '/terms'
     | '/api/public/cron/daily-briefing'
     | '/api/public/cron/gmail-sync'
     | '/api/public/cron/scrape-jobs'
@@ -222,18 +270,22 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AboutRoute: typeof AboutRoute
   ApplicationsRoute: typeof ApplicationsRoute
+  BlogRoute: typeof BlogRoute
   BriefingRoute: typeof BriefingRoute
   CalendarRoute: typeof CalendarRoute
   DashboardRoute: typeof DashboardRoute
   JobsRoute: typeof JobsRoute
   LoginRoute: typeof LoginRoute
   OnboardingRoute: typeof OnboardingRoute
+  PrivacyRoute: typeof PrivacyRoute
   RecruiterInboxRoute: typeof RecruiterInboxRoute
   ResumeLabRoute: typeof ResumeLabRoute
   SettingsRoute: typeof SettingsRoute
   SignupRoute: typeof SignupRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  TermsRoute: typeof TermsRoute
   ApiPublicCronDailyBriefingRoute: typeof ApiPublicCronDailyBriefingRoute
   ApiPublicCronGmailSyncRoute: typeof ApiPublicCronGmailSyncRoute
   ApiPublicCronScrapeJobsRoute: typeof ApiPublicCronScrapeJobsRoute
@@ -241,6 +293,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sitemap.xml': {
       id: '/sitemap.xml'
       path: '/sitemap.xml'
@@ -274,6 +333,13 @@ declare module '@tanstack/react-router' {
       path: '/recruiter-inbox'
       fullPath: '/recruiter-inbox'
       preLoaderRoute: typeof RecruiterInboxRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/onboarding': {
@@ -318,11 +384,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BriefingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/blog': {
+      id: '/blog'
+      path: '/blog'
+      fullPath: '/blog'
+      preLoaderRoute: typeof BlogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/applications': {
       id: '/applications'
       path: '/applications'
       fullPath: '/applications'
       preLoaderRoute: typeof ApplicationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/about': {
+      id: '/about'
+      path: '/about'
+      fullPath: '/about'
+      preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/': {
@@ -358,18 +438,22 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AboutRoute: AboutRoute,
   ApplicationsRoute: ApplicationsRoute,
+  BlogRoute: BlogRoute,
   BriefingRoute: BriefingRoute,
   CalendarRoute: CalendarRoute,
   DashboardRoute: DashboardRoute,
   JobsRoute: JobsRoute,
   LoginRoute: LoginRoute,
   OnboardingRoute: OnboardingRoute,
+  PrivacyRoute: PrivacyRoute,
   RecruiterInboxRoute: RecruiterInboxRoute,
   ResumeLabRoute: ResumeLabRoute,
   SettingsRoute: SettingsRoute,
   SignupRoute: SignupRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  TermsRoute: TermsRoute,
   ApiPublicCronDailyBriefingRoute: ApiPublicCronDailyBriefingRoute,
   ApiPublicCronGmailSyncRoute: ApiPublicCronGmailSyncRoute,
   ApiPublicCronScrapeJobsRoute: ApiPublicCronScrapeJobsRoute,
