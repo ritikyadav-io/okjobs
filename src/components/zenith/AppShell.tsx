@@ -41,6 +41,10 @@ export function AppShell({ children }: { children: ReactNode }) {
     if (!loading && !user) nav({ to: "/login" });
   }, [loading, user, nav]);
 
+  useEffect(() => {
+    if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "auto" });
+  }, [pathname]);
+
   if (loading || !user) {
     return (
       <div className="grid min-h-screen place-items-center bg-background">
