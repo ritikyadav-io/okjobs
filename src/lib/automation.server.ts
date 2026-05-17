@@ -422,11 +422,11 @@ export async function scrapeJobsForUser(db: Db, userId: string, query?: string, 
     const { data: existing } = await db.from("jobs").select("id").eq("created_by", userId).eq("url", url).maybeSingle();
     if (existing?.id) {
       const { error } = await db.from("jobs").update(job).eq("id", existing.id).eq("created_by", userId);
-      if (error) throw new Error(error.message);
+      if (error) { console.error("[scrape] update failed", error.message); continue; }
       updated++;
     } else {
-      const { error } = await db.from("jobs").insert(job);
-      if (error) throw new Error(error.message);
+      const { error } = await db.from("jobs").upsert(job, { onConflict: "created_by,url", ignoreDuplicates: true });
+      if (error) { console.error("[scrape] insert failed", error.message); continue; }
       inserted++;
     }
   }
