@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SettingsRouteImport } from './routes/settings'
@@ -29,6 +30,11 @@ import { Route as ApiPublicCronScrapeJobsRouteImport } from './routes/api/public
 import { Route as ApiPublicCronGmailSyncRouteImport } from './routes/api/public/cron/gmail-sync'
 import { Route as ApiPublicCronDailyBriefingRouteImport } from './routes/api/public/cron/daily-briefing'
 
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
@@ -143,6 +149,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/terms': typeof TermsRoute
   '/api/public/cron/daily-briefing': typeof ApiPublicCronDailyBriefingRoute
   '/api/public/cron/gmail-sync': typeof ApiPublicCronGmailSyncRoute
   '/api/public/cron/scrape-jobs': typeof ApiPublicCronScrapeJobsRoute
@@ -164,6 +171,7 @@ export interface FileRoutesByTo {
   '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/terms': typeof TermsRoute
   '/api/public/cron/daily-briefing': typeof ApiPublicCronDailyBriefingRoute
   '/api/public/cron/gmail-sync': typeof ApiPublicCronGmailSyncRoute
   '/api/public/cron/scrape-jobs': typeof ApiPublicCronScrapeJobsRoute
@@ -186,6 +194,7 @@ export interface FileRoutesById {
   '/settings': typeof SettingsRoute
   '/signup': typeof SignupRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/terms': typeof TermsRoute
   '/api/public/cron/daily-briefing': typeof ApiPublicCronDailyBriefingRoute
   '/api/public/cron/gmail-sync': typeof ApiPublicCronGmailSyncRoute
   '/api/public/cron/scrape-jobs': typeof ApiPublicCronScrapeJobsRoute
@@ -209,6 +218,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/signup'
     | '/sitemap.xml'
+    | '/terms'
     | '/api/public/cron/daily-briefing'
     | '/api/public/cron/gmail-sync'
     | '/api/public/cron/scrape-jobs'
@@ -230,6 +240,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/signup'
     | '/sitemap.xml'
+    | '/terms'
     | '/api/public/cron/daily-briefing'
     | '/api/public/cron/gmail-sync'
     | '/api/public/cron/scrape-jobs'
@@ -251,6 +262,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/signup'
     | '/sitemap.xml'
+    | '/terms'
     | '/api/public/cron/daily-briefing'
     | '/api/public/cron/gmail-sync'
     | '/api/public/cron/scrape-jobs'
@@ -273,6 +285,7 @@ export interface RootRouteChildren {
   SettingsRoute: typeof SettingsRoute
   SignupRoute: typeof SignupRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  TermsRoute: typeof TermsRoute
   ApiPublicCronDailyBriefingRoute: typeof ApiPublicCronDailyBriefingRoute
   ApiPublicCronGmailSyncRoute: typeof ApiPublicCronGmailSyncRoute
   ApiPublicCronScrapeJobsRoute: typeof ApiPublicCronScrapeJobsRoute
@@ -280,6 +293,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/sitemap.xml': {
       id: '/sitemap.xml'
       path: '/sitemap.xml'
@@ -433,6 +453,7 @@ const rootRouteChildren: RootRouteChildren = {
   SettingsRoute: SettingsRoute,
   SignupRoute: SignupRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  TermsRoute: TermsRoute,
   ApiPublicCronDailyBriefingRoute: ApiPublicCronDailyBriefingRoute,
   ApiPublicCronGmailSyncRoute: ApiPublicCronGmailSyncRoute,
   ApiPublicCronScrapeJobsRoute: ApiPublicCronScrapeJobsRoute,
