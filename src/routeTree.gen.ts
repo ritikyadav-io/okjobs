@@ -14,6 +14,7 @@ import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ResumeLabRouteImport } from './routes/resume-lab'
 import { Route as RecruiterInboxRouteImport } from './routes/recruiter-inbox'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as JobsRouteImport } from './routes/jobs'
@@ -51,6 +52,11 @@ const ResumeLabRoute = ResumeLabRouteImport.update({
 const RecruiterInboxRoute = RecruiterInboxRouteImport.update({
   id: '/recruiter-inbox',
   path: '/recruiter-inbox',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OnboardingRoute = OnboardingRouteImport.update({
@@ -131,6 +137,7 @@ export interface FileRoutesByFullPath {
   '/jobs': typeof JobsRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
+  '/privacy': typeof PrivacyRoute
   '/recruiter-inbox': typeof RecruiterInboxRoute
   '/resume-lab': typeof ResumeLabRoute
   '/settings': typeof SettingsRoute
@@ -151,6 +158,7 @@ export interface FileRoutesByTo {
   '/jobs': typeof JobsRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
+  '/privacy': typeof PrivacyRoute
   '/recruiter-inbox': typeof RecruiterInboxRoute
   '/resume-lab': typeof ResumeLabRoute
   '/settings': typeof SettingsRoute
@@ -172,6 +180,7 @@ export interface FileRoutesById {
   '/jobs': typeof JobsRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
+  '/privacy': typeof PrivacyRoute
   '/recruiter-inbox': typeof RecruiterInboxRoute
   '/resume-lab': typeof ResumeLabRoute
   '/settings': typeof SettingsRoute
@@ -194,6 +203,7 @@ export interface FileRouteTypes {
     | '/jobs'
     | '/login'
     | '/onboarding'
+    | '/privacy'
     | '/recruiter-inbox'
     | '/resume-lab'
     | '/settings'
@@ -214,6 +224,7 @@ export interface FileRouteTypes {
     | '/jobs'
     | '/login'
     | '/onboarding'
+    | '/privacy'
     | '/recruiter-inbox'
     | '/resume-lab'
     | '/settings'
@@ -234,6 +245,7 @@ export interface FileRouteTypes {
     | '/jobs'
     | '/login'
     | '/onboarding'
+    | '/privacy'
     | '/recruiter-inbox'
     | '/resume-lab'
     | '/settings'
@@ -255,6 +267,7 @@ export interface RootRouteChildren {
   JobsRoute: typeof JobsRoute
   LoginRoute: typeof LoginRoute
   OnboardingRoute: typeof OnboardingRoute
+  PrivacyRoute: typeof PrivacyRoute
   RecruiterInboxRoute: typeof RecruiterInboxRoute
   ResumeLabRoute: typeof ResumeLabRoute
   SettingsRoute: typeof SettingsRoute
@@ -300,6 +313,13 @@ declare module '@tanstack/react-router' {
       path: '/recruiter-inbox'
       fullPath: '/recruiter-inbox'
       preLoaderRoute: typeof RecruiterInboxRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/onboarding': {
@@ -407,6 +427,7 @@ const rootRouteChildren: RootRouteChildren = {
   JobsRoute: JobsRoute,
   LoginRoute: LoginRoute,
   OnboardingRoute: OnboardingRoute,
+  PrivacyRoute: PrivacyRoute,
   RecruiterInboxRoute: RecruiterInboxRoute,
   ResumeLabRoute: ResumeLabRoute,
   SettingsRoute: SettingsRoute,
