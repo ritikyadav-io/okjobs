@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Zap, Briefcase, FileText, Inbox, Bell, Calendar, Sunrise, ArrowRight, Sparkles, Check } from "lucide-react";
 import { Logo } from "@/components/zenith/Logo";
 import { ThemeToggle } from "@/components/zenith/ThemeToggle";
+import { SiteFooter } from "@/components/zenith/SiteFooter";
 
 export const Route = createFileRoute("/")({
   head: () => ({
