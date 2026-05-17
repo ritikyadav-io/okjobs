@@ -20,6 +20,7 @@ import { Route as JobsRouteImport } from './routes/jobs'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CalendarRouteImport } from './routes/calendar'
 import { Route as BriefingRouteImport } from './routes/briefing'
+import { Route as BlogRouteImport } from './routes/blog'
 import { Route as ApplicationsRouteImport } from './routes/applications'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
@@ -82,6 +83,11 @@ const BriefingRoute = BriefingRouteImport.update({
   path: '/briefing',
   getParentRoute: () => rootRouteImport,
 } as any)
+const BlogRoute = BlogRouteImport.update({
+  id: '/blog',
+  path: '/blog',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApplicationsRoute = ApplicationsRouteImport.update({
   id: '/applications',
   path: '/applications',
@@ -118,6 +124,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/applications': typeof ApplicationsRoute
+  '/blog': typeof BlogRoute
   '/briefing': typeof BriefingRoute
   '/calendar': typeof CalendarRoute
   '/dashboard': typeof DashboardRoute
@@ -137,6 +144,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/applications': typeof ApplicationsRoute
+  '/blog': typeof BlogRoute
   '/briefing': typeof BriefingRoute
   '/calendar': typeof CalendarRoute
   '/dashboard': typeof DashboardRoute
@@ -157,6 +165,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/applications': typeof ApplicationsRoute
+  '/blog': typeof BlogRoute
   '/briefing': typeof BriefingRoute
   '/calendar': typeof CalendarRoute
   '/dashboard': typeof DashboardRoute
@@ -178,6 +187,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/applications'
+    | '/blog'
     | '/briefing'
     | '/calendar'
     | '/dashboard'
@@ -197,6 +207,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/applications'
+    | '/blog'
     | '/briefing'
     | '/calendar'
     | '/dashboard'
@@ -216,6 +227,7 @@ export interface FileRouteTypes {
     | '/'
     | '/about'
     | '/applications'
+    | '/blog'
     | '/briefing'
     | '/calendar'
     | '/dashboard'
@@ -236,6 +248,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   ApplicationsRoute: typeof ApplicationsRoute
+  BlogRoute: typeof BlogRoute
   BriefingRoute: typeof BriefingRoute
   CalendarRoute: typeof CalendarRoute
   DashboardRoute: typeof DashboardRoute
@@ -331,6 +344,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BriefingRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/blog': {
+      id: '/blog'
+      path: '/blog'
+      fullPath: '/blog'
+      preLoaderRoute: typeof BlogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/applications': {
       id: '/applications'
       path: '/applications'
@@ -380,6 +400,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   ApplicationsRoute: ApplicationsRoute,
+  BlogRoute: BlogRoute,
   BriefingRoute: BriefingRoute,
   CalendarRoute: CalendarRoute,
   DashboardRoute: DashboardRoute,
