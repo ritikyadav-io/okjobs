@@ -630,3 +630,49 @@ export async function generateSuggestedReplyText(input: { subject: string; body:
   const json = await res.json();
   return json.choices?.[0]?.message?.content?.trim() || "";
 }
+
+export async function logConnectorRun(db: Db, userId: string, connector: string, kind: "run" | "verify", fn: () => Promise<{ message?: string }>) {
+  const start = Date.now();
+  try {
+    const r = await fn();
+    await db.from("connector_runs").insert({ user_id: userId, connector, kind, status: "ok", message: r.message ?? null, duration_ms: Date.now() - start });
+    return { ok: true, message: r.message ?? "" };
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    await db.from("connector_runs").insert({ user_id: userId, connector, kind, status: "error", message: message.slice(0, 500), duration_ms: Date.now() - start });
+    throw error;
+  }
+}
+
+export async function verifyConnectorGateway(connectorKey: string): Promise<{ ok: boolean; message: string }> {
+  if (!process.env[connectorKey]) return { ok: false, message: `${connectorKey} not configured` };
+  if (!process.env.LOVABLE_API_KEY) return { ok: false, message: "LOVABLE_API_KEY missing" };
+  try {
+    const res = await fetch("https://connector-gateway.lovable.dev/api/v1/verify_credentials", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${process.env.LOVABLE_API_KEY}`, "X-Connection-Api-Key": process.env[connectorKey]! },
+    });
+    const text = await res.text();
+    if (!res.ok) return { ok: false, message: `HTTP ${res.status}: ${text.slice(0, 200)}` };
+    try {
+      const j = JSON.parse(text);
+      if (j.outcome === "failed") return { ok: false, message: j.error || "verification failed" };
+      return { ok: true, message: `${j.outcome ?? "verified"} (${j.latency_ms ?? 0}ms)` };
+    } catch { return { ok: true, message: "verified" }; }
+  } catch (e) {
+    return { ok: false, message: e instanceof Error ? e.message : String(e) };
+  }
+}
+
+export async function verifyFirecrawl(): Promise<{ ok: boolean; message: string }> {
+  if (!process.env.FIRECRAWL_API_KEY) return { ok: false, message: "FIRECRAWL_API_KEY not configured" };
+  try {
+    const res = await fetch("https://api.firecrawl.dev/v2/search", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${process.env.FIRECRAWL_API_KEY}` },
+      body: JSON.stringify({ query: "test", limit: 1 }),
+    });
+    if (!res.ok) return { ok: false, message: `HTTP ${res.status}` };
+    return { ok: true, message: "verified" };
+  } catch (e) { return { ok: false, message: e instanceof Error ? e.message : String(e) }; }
+}
