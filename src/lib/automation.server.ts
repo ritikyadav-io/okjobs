@@ -7,15 +7,16 @@ const DOCS_GW = "https://connector-gateway.lovable.dev/google_docs/v1";
 const RESEND_GW = "https://connector-gateway.lovable.dev/resend";
 
 const RECRUITER_QUERY = 'newer_than:30d (interview OR application OR offer OR rejected OR "next steps" OR schedule OR assessment OR OA OR recruiter OR hiring OR talent OR careers)';
-const JOB_SITES = [
-  "site:linkedin.com/jobs",
-  "site:indeed.com",
-  "site:naukri.com",
-  "site:glassdoor.com/job",
-  "site:wellfound.com/jobs",
-  "site:remoteok.com",
-  "site:weworkremotely.com",
-  "site:ycombinator.com/jobs",
+const JOB_SITE_GROUPS = [
+  ["site:linkedin.com/jobs", "site:indeed.com", "site:glassdoor.com/job"],
+  ["site:naukri.com", "site:internshala.com", "site:hirist.com", "site:instahyre.com", "site:cutshort.io"],
+  ["site:wellfound.com/jobs", "site:ycombinator.com/jobs", "site:remoteok.com", "site:weworkremotely.com", "site:remote.co"],
+  ["site:monster.com", "site:foundit.in", "site:shine.com", "site:jobstreet.com"],
+];
+const TARGET_COMPANY_GROUPS = [
+  ["site:careers.microsoft.com", "site:amazon.jobs", "site:careers.google.com", "site:metacareers.com"],
+  ["site:tcs.com/careers", "site:careers.wipro.com", "site:infosys.com/careers", "site:careers.cognizant.com"],
+  ["site:rippling.com/careers", "site:databricks.com/company/careers", "site:cred.club/careers", "site:walmart.com/careers"],
 ];
 const ACTIVE_STATUSES = ["Saved", "Applying", "Applied", "OA Received", "Interview Scheduled"];
 
