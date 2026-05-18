@@ -31,7 +31,7 @@ function InboxPage() {
   const [reply, setReply] = useState<Record<string, string>>({});
   useRealtimeRefresh(["recruiter_emails", "applications", "calendar_events"], [["emails"], ["applications"], ["events"], ["dashboard-stats"]]);
 
-  const emails = useQuery({ queryKey: ["emails"], queryFn: () => listFn() });
+  const emails = useQuery({ queryKey: ["emails"], queryFn: () => listFn(), staleTime: 30_000, placeholderData: (p) => p });
   const sync = useMutation({
     mutationFn: () => syncFn(),
     onSuccess: (r) => { toast.success(`Found ${r.added} new emails`); qc.invalidateQueries({ queryKey: ["emails"] }); qc.invalidateQueries({ queryKey: ["dashboard-stats"] }); },
