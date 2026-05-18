@@ -18,7 +18,7 @@ function CalendarPage() {
   const listFn = useServerFn(listEvents);
   const syncFn = useServerFn(syncCalendar);
   useRealtimeRefresh(["calendar_events", "applications"], [["events"], ["applications"], ["dashboard-stats"]]);
-  const events = useQuery({ queryKey: ["events"], queryFn: () => listFn() });
+  const events = useQuery({ queryKey: ["events"], queryFn: () => listFn(), staleTime: 30_000, placeholderData: (p) => p });
   const sync = useMutation({
     mutationFn: () => syncFn(),
     onSuccess: (r) => { toast.success(`Synced ${r.added} new events`); qc.invalidateQueries({ queryKey: ["events"] }); },

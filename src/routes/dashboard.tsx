@@ -30,7 +30,7 @@ function Dashboard() {
   const appsFn = useServerFn(listApplications);
   useRealtimeRefresh(["applications", "jobs", "recruiter_emails", "calendar_events", "daily_briefings"], [["dashboard-stats"], ["jobs"], ["emails"], ["applications"], ["briefing"]]);
 
-  const stats = useQuery({ queryKey: ["dashboard-stats"], queryFn: () => statsFn() });
+  const stats = useQuery({ queryKey: ["dashboard-stats"], queryFn: () => statsFn(), staleTime: 30_000, placeholderData: (p) => p });
   const jobs = useQuery({ queryKey: ["jobs"], queryFn: () => jobsFn() });
   const emails = useQuery({ queryKey: ["emails"], queryFn: () => emailsFn() });
   const apps = useQuery({ queryKey: ["applications"], queryFn: () => appsFn() });

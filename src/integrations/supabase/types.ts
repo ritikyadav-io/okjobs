@@ -114,6 +114,39 @@ export type Database = {
           },
         ]
       }
+      connector_runs: {
+        Row: {
+          connector: string
+          duration_ms: number | null
+          id: string
+          kind: string
+          message: string | null
+          ran_at: string
+          status: string
+          user_id: string
+        }
+        Insert: {
+          connector: string
+          duration_ms?: number | null
+          id?: string
+          kind?: string
+          message?: string | null
+          ran_at?: string
+          status: string
+          user_id: string
+        }
+        Update: {
+          connector?: string
+          duration_ms?: number | null
+          id?: string
+          kind?: string
+          message?: string | null
+          ran_at?: string
+          status?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       cover_letter_versions: {
         Row: {
           application_id: string | null

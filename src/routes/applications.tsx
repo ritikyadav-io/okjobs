@@ -32,7 +32,7 @@ function ApplicationsPage() {
   const delFn = useServerFn(deleteApplication);
   useRealtimeRefresh(["applications"], [["applications"], ["dashboard-stats"]]);
 
-  const apps = useQuery({ queryKey: ["applications"], queryFn: () => listFn() });
+  const apps = useQuery({ queryKey: ["applications"], queryFn: () => listFn(), staleTime: 30_000, placeholderData: (p) => p });
   const [view, setView] = useState<"kanban" | "list">("kanban");
   const [showAdd, setShowAdd] = useState(false);
   const [form, setForm] = useState({ company: "", title: "" });

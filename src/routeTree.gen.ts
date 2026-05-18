@@ -19,6 +19,7 @@ import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as JobsRouteImport } from './routes/jobs'
+import { Route as IntegrationsRouteImport } from './routes/integrations'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as CalendarRouteImport } from './routes/calendar'
 import { Route as BriefingRouteImport } from './routes/briefing'
@@ -78,6 +79,11 @@ const LoginRoute = LoginRouteImport.update({
 const JobsRoute = JobsRouteImport.update({
   id: '/jobs',
   path: '/jobs',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const IntegrationsRoute = IntegrationsRouteImport.update({
+  id: '/integrations',
+  path: '/integrations',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DashboardRoute = DashboardRouteImport.update({
@@ -140,6 +146,7 @@ export interface FileRoutesByFullPath {
   '/briefing': typeof BriefingRoute
   '/calendar': typeof CalendarRoute
   '/dashboard': typeof DashboardRoute
+  '/integrations': typeof IntegrationsRoute
   '/jobs': typeof JobsRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
@@ -162,6 +169,7 @@ export interface FileRoutesByTo {
   '/briefing': typeof BriefingRoute
   '/calendar': typeof CalendarRoute
   '/dashboard': typeof DashboardRoute
+  '/integrations': typeof IntegrationsRoute
   '/jobs': typeof JobsRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
@@ -185,6 +193,7 @@ export interface FileRoutesById {
   '/briefing': typeof BriefingRoute
   '/calendar': typeof CalendarRoute
   '/dashboard': typeof DashboardRoute
+  '/integrations': typeof IntegrationsRoute
   '/jobs': typeof JobsRoute
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
@@ -209,6 +218,7 @@ export interface FileRouteTypes {
     | '/briefing'
     | '/calendar'
     | '/dashboard'
+    | '/integrations'
     | '/jobs'
     | '/login'
     | '/onboarding'
@@ -231,6 +241,7 @@ export interface FileRouteTypes {
     | '/briefing'
     | '/calendar'
     | '/dashboard'
+    | '/integrations'
     | '/jobs'
     | '/login'
     | '/onboarding'
@@ -253,6 +264,7 @@ export interface FileRouteTypes {
     | '/briefing'
     | '/calendar'
     | '/dashboard'
+    | '/integrations'
     | '/jobs'
     | '/login'
     | '/onboarding'
@@ -276,6 +288,7 @@ export interface RootRouteChildren {
   BriefingRoute: typeof BriefingRoute
   CalendarRoute: typeof CalendarRoute
   DashboardRoute: typeof DashboardRoute
+  IntegrationsRoute: typeof IntegrationsRoute
   JobsRoute: typeof JobsRoute
   LoginRoute: typeof LoginRoute
   OnboardingRoute: typeof OnboardingRoute
@@ -363,6 +376,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof JobsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/integrations': {
+      id: '/integrations'
+      path: '/integrations'
+      fullPath: '/integrations'
+      preLoaderRoute: typeof IntegrationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard': {
       id: '/dashboard'
       path: '/dashboard'
@@ -444,6 +464,7 @@ const rootRouteChildren: RootRouteChildren = {
   BriefingRoute: BriefingRoute,
   CalendarRoute: CalendarRoute,
   DashboardRoute: DashboardRoute,
+  IntegrationsRoute: IntegrationsRoute,
   JobsRoute: JobsRoute,
   LoginRoute: LoginRoute,
   OnboardingRoute: OnboardingRoute,
@@ -461,13 +482,3 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
-
-import type { getRouter } from './router.tsx'
-import type { startInstance } from './start.ts'
-declare module '@tanstack/react-start' {
-  interface Register {
-    ssr: true
-    router: Awaited<ReturnType<typeof getRouter>>
-    config: Awaited<ReturnType<typeof startInstance.getOptions>>
-  }
-}
