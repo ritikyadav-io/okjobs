@@ -374,33 +374,59 @@ function companyFromResult(result: any, url: string) {
   return source.replace(/[-_]/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
 }
 
-export async function scrapeJobsForUser(db: Db, userId: string, query?: string, limit = 20) {
+async function firecrawlSearch(apiKey: string, query: string, limit: number) {
+  const res = await fetch("https://api.firecrawl.dev/v2/search", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
+    body: JSON.stringify({ query, limit, scrapeOptions: { formats: ["markdown"], onlyMainContent: true } }),
+  });
+  if (!res.ok) throw new Error(`Firecrawl [${res.status}]: ${(await res.text()).slice(0, 200)}`);
+  const json = await res.json();
+  return (json?.data?.web ?? json?.web ?? json?.data ?? []) as any[];
+}
+
+export async function scrapeJobsForUser(db: Db, userId: string, query?: string, limit = 60) {
   const apiKey = env("FIRECRAWL_API_KEY");
   const { data: profile } = await db.from("profiles").select("resume_skills, preferred_role").eq("id", userId).maybeSingle();
   const skills = ((profile?.resume_skills as string[] | null) ?? []).filter(Boolean);
   const role = (query || profile?.preferred_role || skills.slice(0, 3).join(" ") || "software engineer").trim();
-  const searchQuery = `${role} jobs (${JOB_SITES.join(" OR ")})`;
-  const res = await fetch("https://api.firecrawl.dev/v2/search", {
-    method: "POST",
-    headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
-    body: JSON.stringify({
-      query: searchQuery,
-      limit: Math.min(Math.max(limit, 1), 25),
-      scrapeOptions: { formats: ["markdown"], onlyMainContent: true },
-    }),
-  });
-  if (!res.ok) throw new Error(`Firecrawl search failed [${res.status}]: ${(await res.text()).slice(0, 300)}`);
-  const json = await res.json();
-  const results: any[] = json?.data?.web ?? json?.web ?? json?.data ?? [];
+  const wantsIntern = /intern/i.test(role);
+
+  // Build query variants (one per source group) and run in parallel.
+  const groups = [...JOB_SITE_GROUPS, ...TARGET_COMPANY_GROUPS];
+  const perGroup = Math.max(6, Math.ceil(limit / groups.length) + 2);
+  const queries = groups.map((g) => `${role}${wantsIntern ? " internship" : ""} jobs (${g.join(" OR ")})`);
+  const settled = await Promise.allSettled(queries.map((q) => firecrawlSearch(apiKey, q, perGroup)));
+  const allResults: any[] = [];
+  const seenUrls = new Set<string>();
+  for (const r of settled) {
+    if (r.status !== "fulfilled") continue;
+    for (const item of r.value) {
+      const url = item.url || item.link;
+      if (!url || seenUrls.has(url)) continue;
+      seenUrls.add(url);
+      allResults.push(item);
+    }
+  }
+
+  // Prune stale jobs for this user (older than 24h or not matching current role).
+  await db.from("jobs").delete().eq("created_by", userId).lt("scraped_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString());
+
+  const roleTokens = role.toLowerCase().split(/\s+/).filter((t) => t.length > 2);
   let inserted = 0;
   let updated = 0;
 
-  for (const result of results) {
+  for (const result of allResults) {
     const url = result.url || result.link;
     const title = String(result.title || "").slice(0, 220);
-    if (!url || !title || !/job|career|opening|engineer|developer|designer|manager|analyst|intern/i.test(`${title} ${url}`)) continue;
     const description = String(result.markdown || result.description || "").slice(0, 8000);
-    const ats = computeAts(`${title}\n${description}`, skills);
+    const haystack = `${title} ${url} ${description}`.toLowerCase();
+    if (!url || !title) continue;
+    if (!/job|career|opening|engineer|developer|designer|manager|analyst|intern|scientist|product|marketing|sales|data|ml|ai/i.test(haystack)) continue;
+    // Soft query relevance: at least one query token must appear in title/url/desc (skip when role is generic).
+    if (roleTokens.length && !roleTokens.some((t) => haystack.includes(t))) continue;
+
+    const ats = computeAts(`${title}\n${description}`, skills.length ? skills : roleTokens);
     const platform = platformFromUrl(url);
     const company = companyFromResult(result, url).slice(0, 160) || platform;
     const job = {
@@ -412,7 +438,7 @@ export async function scrapeJobsForUser(db: Db, userId: string, query?: string, 
       ats_score: ats.score,
       recommendation: recommendation(ats.score),
       competition: ats.score >= 82 ? "High" : ats.score >= 62 ? "Medium" : "Low",
-      remote: /remote|work from home|wfh/i.test(`${title}\n${description}`) ? "Remote" : null,
+      remote: /remote|work from home|wfh/i.test(haystack) ? "Remote" : null,
       location: result.location ?? null,
       salary: result.salary ?? null,
       posted_at: new Date().toISOString(),
@@ -431,7 +457,7 @@ export async function scrapeJobsForUser(db: Db, userId: string, query?: string, 
       inserted++;
     }
   }
-  return { scanned: results.length, inserted, updated, query: role };
+  return { scanned: allResults.length, inserted, updated, query: role };
 }
 
 export async function scrapeJobsForAllProfiles() {
