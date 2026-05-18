@@ -26,11 +26,14 @@ function JobsPage() {
   const [remoteOnly, setRemoteOnly] = useState(false);
   const [query, setQuery] = useState("");
 
-  const jobs = useQuery({ queryKey: ["jobs"], queryFn: () => listFn() });
+  const jobs = useQuery({ queryKey: ["jobs"], queryFn: () => listFn(), staleTime: 20_000 });
 
   const scrape = useMutation({
-    mutationFn: (q: string) => scrapeFn({ data: { query: q, limit: 12 } }),
-    onSuccess: (r) => { toast.success(`Found ${r.inserted} jobs`); qc.invalidateQueries({ queryKey: ["jobs"] }); },
+    mutationFn: (q: string) => scrapeFn({ data: { query: q, limit: 60 } }),
+    onSuccess: async (r) => {
+      toast.success(`Scraped ${r.scanned} · ${r.inserted} new${r.updated ? ` · ${r.updated} updated` : ""}`);
+      await qc.refetchQueries({ queryKey: ["jobs"] });
+    },
     onError: (e: any) => toast.error(e.message ?? "Scrape failed"),
   });
   const save = useMutation({
