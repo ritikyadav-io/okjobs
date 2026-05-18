@@ -5,8 +5,8 @@ import { scrapeJobsForUser } from "@/lib/automation.server";
 
 export const scrapeJobs = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: unknown) => z.object({ query: z.string().min(1).max(200), limit: z.number().int().min(1).max(25).optional() }).parse(input))
-  .handler(async ({ data, context }) => scrapeJobsForUser(context.supabase as any, context.userId, data.query, data.limit ?? 15));
+  .inputValidator((input: unknown) => z.object({ query: z.string().min(1).max(200), limit: z.number().int().min(1).max(120).optional() }).parse(input))
+  .handler(async ({ data, context }) => scrapeJobsForUser(context.supabase as any, context.userId, data.query, data.limit ?? 60));
 
 export const listJobs = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
