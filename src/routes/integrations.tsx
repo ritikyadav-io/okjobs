@@ -4,8 +4,10 @@ import { PageHeader } from "@/components/zenith/PageHeader";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { listConnectorRuns, verifyConnector, runConnectorNow } from "@/lib/connectors.functions";
-import { CheckCircle2, XCircle, Loader2, PlayCircle, ShieldCheck, Clock } from "lucide-react";
+import { getSheetSettings, syncSheetNow } from "@/lib/sheets.functions";
+import { CheckCircle2, XCircle, Loader2, PlayCircle, ShieldCheck, Clock, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
+import { Link } from "@tanstack/react-router";
 import { useRealtimeRefresh } from "@/hooks/use-realtime-refresh";
 
 export const Route = createFileRoute("/integrations")({
