@@ -100,6 +100,25 @@ function IntegrationsPage() {
                       {latest.message && <div className="mt-1 truncate text-muted-foreground/80">{latest.message}</div>}
                     </div>
                   )}
+                  {row.key === "sheets" && sheets.data?.settings && (
+                    <div className="mt-2 rounded-lg border border-border bg-background/60 p-2 text-xs">
+                      <div>
+                        <span className="text-muted-foreground">Sheet:</span>{" "}
+                        <span className="font-mono">{sheets.data.settings.spreadsheet_id?.slice(0, 14)}…</span>
+                        {" · "}{sheets.data.settings.sheet_name}
+                      </div>
+                      {sheets.data.settings.last_sync_at && (
+                        <div className="mt-0.5">
+                          <span className="text-muted-foreground">Last sync:</span>{" "}
+                          {new Date(sheets.data.settings.last_sync_at).toLocaleString()}
+                          {typeof sheets.data.settings.last_row_count === "number" && ` · ${sheets.data.settings.last_row_count} rows`}
+                        </div>
+                      )}
+                      {sheets.data.settings.last_error && (
+                        <div className="mt-0.5 text-destructive">⚠ {sheets.data.settings.last_error}</div>
+                      )}
+                    </div>
+                  )}
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <button
@@ -110,6 +129,21 @@ function IntegrationsPage() {
                     {isVerifying ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <ShieldCheck className="h-3.5 w-3.5" />}
                     Verify
                   </button>
+                  {row.key === "sheets" && (
+                    <>
+                      <Link to="/settings" className="inline-flex items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 text-xs font-semibold hover:bg-accent">
+                        Configure
+                      </Link>
+                      <button
+                        onClick={() => syncSheets.mutate()}
+                        disabled={syncSheets.isPending || !sheets.data?.settings?.spreadsheet_id}
+                        className="inline-flex items-center gap-2 rounded-lg bg-gradient-brand px-3 py-2 text-xs font-semibold text-white shadow-glow disabled:opacity-60"
+                      >
+                        {syncSheets.isPending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="h-3.5 w-3.5" />}
+                        Sync now
+                      </button>
+                    </>
+                  )}
                   {row.runName && (
                     <button
                       onClick={() => runNow.mutate(row.runName!)}
