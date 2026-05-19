@@ -34,7 +34,7 @@ export function SheetsMappingCard() {
       setSpreadsheet(s.spreadsheet_id ?? "");
       setSheetName(s.sheet_name ?? "Applications");
       setAutoSync(s.auto_sync ?? true);
-      setMap({ ...DEFAULT_MAP, ...(s.column_map ?? {}) });
+      setMap({ ...DEFAULT_MAP, ...((s.column_map ?? {}) as Record<string, string>) });
     }
   }, [q.data]);
 
