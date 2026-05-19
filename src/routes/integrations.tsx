@@ -39,9 +39,12 @@ function IntegrationsPage() {
   const listFn = useServerFn(listConnectorRuns);
   const verifyFn = useServerFn(verifyConnector);
   const runFn = useServerFn(runConnectorNow);
-  useRealtimeRefresh(["connector_runs"], [["connector-runs"]]);
+  useRealtimeRefresh(["connector_runs", "sheet_settings"], [["connector-runs"], ["sheet-settings"]]);
 
   const runs = useQuery({ queryKey: ["connector-runs"], queryFn: () => listFn(), staleTime: 15_000 });
+  const sheetSettingsFn = useServerFn(getSheetSettings);
+  const sheets = useQuery({ queryKey: ["sheet-settings"], queryFn: () => sheetSettingsFn(), staleTime: 15_000 });
+  const syncSheetFn = useServerFn(syncSheetNow);
 
   const verify = useMutation({
     mutationFn: (name: ConnectorRow["verifyName"]) => verifyFn({ data: { name } }),
@@ -52,6 +55,11 @@ function IntegrationsPage() {
     mutationFn: (name: NonNullable<ConnectorRow["runName"]>) => runFn({ data: { name } }),
     onSuccess: (r) => { toast.success(`Done: ${r.message}`); qc.invalidateQueries(); },
     onError: (e: any) => toast.error(e.message ?? "Run failed"),
+  });
+  const syncSheets = useMutation({
+    mutationFn: () => syncSheetFn(),
+    onSuccess: (r: any) => { toast.success(`Synced ${r.rows} rows`); qc.invalidateQueries(); },
+    onError: (e: any) => toast.error(e.message ?? "Sheets sync failed"),
   });
 
   const allRuns = runs.data?.runs ?? [];
