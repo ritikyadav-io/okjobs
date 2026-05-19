@@ -403,6 +403,48 @@ export type Database = {
         }
         Relationships: []
       }
+      sheet_settings: {
+        Row: {
+          auto_sync: boolean
+          column_map: Json
+          created_at: string
+          id: string
+          last_error: string | null
+          last_row_count: number | null
+          last_sync_at: string | null
+          sheet_name: string
+          spreadsheet_id: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          auto_sync?: boolean
+          column_map?: Json
+          created_at?: string
+          id?: string
+          last_error?: string | null
+          last_row_count?: number | null
+          last_sync_at?: string | null
+          sheet_name?: string
+          spreadsheet_id?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          auto_sync?: boolean
+          column_map?: Json
+          created_at?: string
+          id?: string
+          last_error?: string | null
+          last_row_count?: number | null
+          last_sync_at?: string | null
+          sheet_name?: string
+          spreadsheet_id?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

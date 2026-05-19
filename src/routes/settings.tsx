@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/zenith/AppShell";
 import { PageHeader } from "@/components/zenith/PageHeader";
-import { User, Bell, Plug, CreditCard, Shield, Check } from "lucide-react";
+import { User, Bell, Plug, CreditCard, Shield, Check, Sheet } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { SheetsMappingCard } from "@/components/zenith/SheetsMappingCard";
 
 export const Route = createFileRoute("/settings")({
   head: () => ({ meta: [{ title: "Settings — Zenith" }, { name: "description", content: "Profile, notifications, connected accounts, plan, and privacy." }] }),
@@ -16,9 +17,11 @@ const TABS = [
   { id: "profile", label: "Profile", icon: User },
   { id: "notifications", label: "Notifications", icon: Bell },
   { id: "accounts", label: "Connected accounts", icon: Plug },
+  { id: "sheets", label: "Google Sheets", icon: Sheet },
   { id: "plan", label: "Subscription", icon: CreditCard },
   { id: "privacy", label: "Privacy & Security", icon: Shield },
 ] as const;
+
 
 function SettingsPage() {
   const { user, profile, refreshProfile } = useAuth();
@@ -74,7 +77,8 @@ function SettingsPage() {
             <div className="sm:col-span-2"><button onClick={save} disabled={saving} className="rounded-lg bg-gradient-brand px-4 py-2 text-sm font-semibold text-white shadow-glow disabled:opacity-60">{saving ? "Saving…" : "Save changes"}</button></div>
           </div>}
           {tab === "notifications" && <div className="space-y-4"><Toggle label="Daily briefing email" desc="Sent every day at 8 AM" defaultOn /><Toggle label="Recruiter reply alerts" desc="Live when Gmail detects recruiter email" defaultOn /><Toggle label="Follow-up reminders" desc="Google Calendar reminders for due follow-ups" defaultOn /></div>}
-          {tab === "accounts" && <div className="grid gap-3 sm:grid-cols-2">{["Gmail", "Google Calendar", "Google Docs", "Resend", "Firecrawl"].map((name) => <div key={name} className="flex items-center justify-between rounded-xl border border-border bg-background p-4"><div><div className="font-semibold">{name}</div><div className="text-xs font-bold text-success">Connected</div></div><span className="rounded-lg border border-border px-3 py-1.5 text-xs font-bold">Managed</span></div>)}</div>}
+          {tab === "accounts" && <div className="grid gap-3 sm:grid-cols-2">{["Gmail", "Google Calendar", "Google Docs", "Google Sheets", "Resend", "Firecrawl"].map((name) => <div key={name} className="flex items-center justify-between rounded-xl border border-border bg-background p-4"><div><div className="font-semibold">{name}</div><div className="text-xs font-bold text-success">Connected</div></div><span className="rounded-lg border border-border px-3 py-1.5 text-xs font-bold">Managed</span></div>)}</div>}
+          {tab === "sheets" && <SheetsMappingCard />}
           {tab === "plan" && <div className="rounded-2xl border-2 border-border bg-background p-5"><div className="text-xs font-bold uppercase text-muted-foreground">Current plan</div><div className="mt-1 text-3xl font-extrabold">{profile?.plan ?? "Free"}</div><div className="mt-4 inline-flex items-center gap-1 rounded-lg border border-border px-3 py-2 text-sm font-semibold"><Check className="h-4 w-4" /> Active</div></div>}
           {tab === "privacy" && <div className="space-y-3"><button className="rounded-lg border border-border px-4 py-2 text-sm font-semibold hover:bg-accent">Change password</button><button className="block rounded-lg border border-border px-4 py-2 text-sm font-semibold hover:bg-accent">Export all data</button></div>}
         </div>
