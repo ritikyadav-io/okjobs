@@ -1,6 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { mirrorApplicationsBackground } from "@/lib/sheets.functions";
+
 
 const STATUSES = ["Saved", "Applying", "Applied", "OA Received", "Interview Scheduled", "Rejected", "Offer Received"] as const;
 
@@ -39,6 +41,7 @@ export const createApplication = createServerFn({ method: "POST" })
       applied_at: new Date().toISOString(),
     }).select().single();
     if (error) throw new Error(error.message);
+    mirrorApplicationsBackground(supabase as any, userId);
     return { application: row };
   });
 
@@ -58,6 +61,7 @@ export const updateApplicationStatus = createServerFn({ method: "POST" })
       .eq("id", data.id)
       .eq("user_id", userId);
     if (error) throw new Error(error.message);
+    mirrorApplicationsBackground(supabase as any, userId);
     return { ok: true };
   });
 
@@ -68,6 +72,7 @@ export const deleteApplication = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const { error } = await supabase.from("applications").delete().eq("id", data.id).eq("user_id", userId);
     if (error) throw new Error(error.message);
+    mirrorApplicationsBackground(supabase as any, userId);
     return { ok: true };
   });
 
