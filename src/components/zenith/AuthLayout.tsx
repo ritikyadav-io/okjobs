@@ -16,7 +16,7 @@ export function AuthLayout({ title, subtitle, children, footer }: { title: strin
           <div className="inline-flex items-center gap-2 rounded-full bg-white/15 px-3 py-1 text-xs font-semibold backdrop-blur">
             <Sparkles className="h-3.5 w-3.5" /> AI Career OS
           </div>
-          <h2 className="mt-4 text-4xl font-extrabold leading-tight">Land the role.<br/>Reach your Zenith.</h2>
+          <h2 className="mt-4 text-4xl font-extrabold leading-tight">Land the role.<br/>Reach your OkJob.</h2>
           <p className="mt-3 max-w-md text-white/80">Auto-discovery, ATS optimization, recruiter monitoring, smart follow-ups. All on autopilot.</p>
           <div className="mt-8 grid grid-cols-3 gap-3">
             {[

@@ -159,7 +159,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <span className="grid h-7 w-7 place-items-center rounded-md bg-gradient-brand shadow-glow">
                 <Zap className="h-3.5 w-3.5 text-white" strokeWidth={3} />
               </span>
-              <span className="text-base">ZENITH</span>
+              <span className="text-base">OkJob</span>
             </Link>
             <button
               aria-label="Notifications"

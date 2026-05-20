@@ -493,7 +493,7 @@ export async function scheduleFollowupRemindersForUser(db: Db, userId: string) {
     await db.from("applications").update({ followup_date: base.toISOString().slice(0, 10) }).eq("id", app.id).eq("user_id", userId);
     if (existing) continue;
     try {
-      await createGoogleCalendarEvent({ title, startsAt: base, endsAt: eventEnd(base, 20), description: "Zenith follow-up reminder" });
+      await createGoogleCalendarEvent({ title, startsAt: base, endsAt: eventEnd(base, 20), description: "OkJob follow-up reminder" });
       scheduled++;
     } catch (error) {
       console.warn("Follow-up Google Calendar reminder skipped", error);
@@ -540,7 +540,7 @@ export function briefingHtml(d: BriefingData) {
   const items = (arr: any[], fmt: (x: any) => string) => arr.length ? arr.map((x) => `<li>${fmt(x)}</li>`).join("") : "<li style='color:#94a3b8'>Nothing new yet</li>";
   return `<!doctype html><html><body style="font-family:Arial,sans-serif;background:#11111a;color:#f8fafc;padding:24px">
   <div style="max-width:640px;margin:0 auto;background:#1b1b27;border:1px solid #333348;border-radius:18px;padding:24px">
-    <div style="font-size:12px;font-weight:800;color:#fbbf24;letter-spacing:3px">ZENITH DAILY BRIEFING</div>
+    <div style="font-size:12px;font-weight:800;color:#fbbf24;letter-spacing:3px">OkJob DAILY BRIEFING</div>
     <h1 style="margin:8px 0 12px;font-size:30px">Good morning, ${escapeHtml(d.name)} 🌅</h1>
     <p style="color:#cbd5e1">Real updates from your jobs, applications, Gmail, and calendar.</p>
     <h2>New jobs (${d.newJobs.length})</h2><ul>${items(d.newJobs, (j) => `<b>${escapeHtml(j.title)}</b> at ${escapeHtml(j.company)} — ${j.ats_score ?? 0}% match`)}</ul>
@@ -563,9 +563,9 @@ export async function sendBriefingForUser(db: Db, userId: string) {
     method: "POST",
     headers: gatewayHeaders("RESEND_API_KEY"),
     body: JSON.stringify({
-      from: "Zenith <onboarding@resend.dev>",
+      from: "OkJob <onboarding@resend.dev>",
       to: [data.email],
-      subject: `Your Zenith briefing — ${new Date().toLocaleDateString()}`,
+      subject: `Your OkJob briefing — ${new Date().toLocaleDateString()}`,
       html: briefingHtml(data),
     }),
   });

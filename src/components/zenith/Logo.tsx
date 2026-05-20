@@ -6,7 +6,7 @@ export function Logo({ className = "" }: { className?: string }) {
       <span className="grid h-8 w-8 place-items-center rounded-lg bg-gradient-brand shadow-glow">
         <Zap className="h-4 w-4 text-white" strokeWidth={3} />
       </span>
-      <span className="text-xl">ZENITH</span>
+      <span className="text-xl">OkJob</span>
     </div>
   );
 }

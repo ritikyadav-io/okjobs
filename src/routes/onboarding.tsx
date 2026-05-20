@@ -7,7 +7,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/onboarding")({
-  head: () => ({ meta: [{ title: "Set up your profile — Zenith" }, { name: "description", content: "Tell Zenith about your career goals to unlock personalized job discovery." }] }),
+  head: () => ({ meta: [{ title: "Set up your profile — OkJob" }, { name: "description", content: "Tell OkJob about your career goals to unlock personalized job discovery." }] }),
   component: Onboarding,
 });
 
