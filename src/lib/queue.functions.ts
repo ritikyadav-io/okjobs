@@ -21,7 +21,7 @@ export const enqueueTask = createServerFn({ method: "POST" })
       .insert({
         user_id: userId,
         task: data.task,
-        payload: data.payload ?? {},
+        payload: (data.payload ?? {}) as any,
         priority: data.priority ?? 0,
         status: "pending",
         scheduled_for: new Date().toISOString(),

@@ -49,7 +49,7 @@ async function runTask(task: string, userId: string, payload: any) {
 
 /** Atomically claim up to N pending+ready jobs and mark them running. */
 async function claimJobs(limit: number) {
-  const { data, error } = await supabaseAdmin.rpc("claim_queue_jobs" as any, { p_limit: limit });
+  const { data, error } = await (supabaseAdmin as any).rpc("claim_queue_jobs", { p_limit: limit });
   if (!error && data) return data as any[];
 
   // Fallback path (no RPC): SELECT then UPDATE per-row guarded on status=pending.
@@ -118,7 +118,7 @@ export async function processNext(maxJobs = 5) {
 export async function enqueueAdmin(userId: string, task: QueueTask, payload: Record<string, unknown> = {}) {
   const { data, error } = await supabaseAdmin
     .from("job_queue")
-    .insert({ user_id: userId, task, payload, status: "pending", scheduled_for: new Date().toISOString() })
+    .insert({ user_id: userId, task, payload: payload as any, status: "pending", scheduled_for: new Date().toISOString() })
     .select()
     .single();
   if (error) throw new Error(error.message);

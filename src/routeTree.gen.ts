@@ -28,6 +28,7 @@ import { Route as ApplicationsRouteImport } from './routes/applications'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiPublicCronScrapeJobsRouteImport } from './routes/api/public/cron/scrape-jobs'
+import { Route as ApiPublicCronQueueWorkerRouteImport } from './routes/api/public/cron/queue-worker'
 import { Route as ApiPublicCronGmailSyncRouteImport } from './routes/api/public/cron/gmail-sync'
 import { Route as ApiPublicCronDailyBriefingRouteImport } from './routes/api/public/cron/daily-briefing'
 
@@ -126,6 +127,12 @@ const ApiPublicCronScrapeJobsRoute = ApiPublicCronScrapeJobsRouteImport.update({
   path: '/api/public/cron/scrape-jobs',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCronQueueWorkerRoute =
+  ApiPublicCronQueueWorkerRouteImport.update({
+    id: '/api/public/cron/queue-worker',
+    path: '/api/public/cron/queue-worker',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicCronGmailSyncRoute = ApiPublicCronGmailSyncRouteImport.update({
   id: '/api/public/cron/gmail-sync',
   path: '/api/public/cron/gmail-sync',
@@ -159,6 +166,7 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/api/public/cron/daily-briefing': typeof ApiPublicCronDailyBriefingRoute
   '/api/public/cron/gmail-sync': typeof ApiPublicCronGmailSyncRoute
+  '/api/public/cron/queue-worker': typeof ApiPublicCronQueueWorkerRoute
   '/api/public/cron/scrape-jobs': typeof ApiPublicCronScrapeJobsRoute
 }
 export interface FileRoutesByTo {
@@ -182,6 +190,7 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/api/public/cron/daily-briefing': typeof ApiPublicCronDailyBriefingRoute
   '/api/public/cron/gmail-sync': typeof ApiPublicCronGmailSyncRoute
+  '/api/public/cron/queue-worker': typeof ApiPublicCronQueueWorkerRoute
   '/api/public/cron/scrape-jobs': typeof ApiPublicCronScrapeJobsRoute
 }
 export interface FileRoutesById {
@@ -206,6 +215,7 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/api/public/cron/daily-briefing': typeof ApiPublicCronDailyBriefingRoute
   '/api/public/cron/gmail-sync': typeof ApiPublicCronGmailSyncRoute
+  '/api/public/cron/queue-worker': typeof ApiPublicCronQueueWorkerRoute
   '/api/public/cron/scrape-jobs': typeof ApiPublicCronScrapeJobsRoute
 }
 export interface FileRouteTypes {
@@ -231,6 +241,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/api/public/cron/daily-briefing'
     | '/api/public/cron/gmail-sync'
+    | '/api/public/cron/queue-worker'
     | '/api/public/cron/scrape-jobs'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -254,6 +265,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/api/public/cron/daily-briefing'
     | '/api/public/cron/gmail-sync'
+    | '/api/public/cron/queue-worker'
     | '/api/public/cron/scrape-jobs'
   id:
     | '__root__'
@@ -277,6 +289,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/api/public/cron/daily-briefing'
     | '/api/public/cron/gmail-sync'
+    | '/api/public/cron/queue-worker'
     | '/api/public/cron/scrape-jobs'
   fileRoutesById: FileRoutesById
 }
@@ -301,6 +314,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   ApiPublicCronDailyBriefingRoute: typeof ApiPublicCronDailyBriefingRoute
   ApiPublicCronGmailSyncRoute: typeof ApiPublicCronGmailSyncRoute
+  ApiPublicCronQueueWorkerRoute: typeof ApiPublicCronQueueWorkerRoute
   ApiPublicCronScrapeJobsRoute: typeof ApiPublicCronScrapeJobsRoute
 }
 
@@ -439,6 +453,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronScrapeJobsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cron/queue-worker': {
+      id: '/api/public/cron/queue-worker'
+      path: '/api/public/cron/queue-worker'
+      fullPath: '/api/public/cron/queue-worker'
+      preLoaderRoute: typeof ApiPublicCronQueueWorkerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/cron/gmail-sync': {
       id: '/api/public/cron/gmail-sync'
       path: '/api/public/cron/gmail-sync'
@@ -477,6 +498,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   ApiPublicCronDailyBriefingRoute: ApiPublicCronDailyBriefingRoute,
   ApiPublicCronGmailSyncRoute: ApiPublicCronGmailSyncRoute,
+  ApiPublicCronQueueWorkerRoute: ApiPublicCronQueueWorkerRoute,
   ApiPublicCronScrapeJobsRoute: ApiPublicCronScrapeJobsRoute,
 }
 export const routeTree = rootRouteImport
