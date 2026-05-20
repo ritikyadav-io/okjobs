@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/login")({
-  head: () => ({ meta: [{ title: "Log in — Zenith" }, { name: "description", content: "Log in to your Zenith account." }] }),
+  head: () => ({ meta: [{ title: "Log in — OkJob" }, { name: "description", content: "Log in to your OkJob account." }] }),
   component: LoginPage,
 });
 

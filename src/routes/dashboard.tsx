@@ -12,7 +12,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { useRealtimeRefresh } from "@/hooks/use-realtime-refresh";
 
 export const Route = createFileRoute("/dashboard")({
-  head: () => ({ meta: [{ title: "Dashboard — Zenith" }, { name: "description", content: "Your job search command center." }] }),
+  head: () => ({ meta: [{ title: "Dashboard — OkJob" }, { name: "description", content: "Your job search command center." }] }),
   component: Dashboard,
 });
 
@@ -43,7 +43,7 @@ function Dashboard() {
     <AppShell>
       <PageHeader
         title={`Good morning, ${greet} 👋`}
-        description="Here's what Zenith found while you were sleeping."
+        description="Here's what OkJob found while you were sleeping."
         actions={
           <Link to="/jobs" className="inline-flex items-center gap-2 rounded-lg bg-gradient-brand px-4 py-2 text-sm font-semibold text-white shadow-glow">
             Browse jobs <ArrowRight className="h-4 w-4" />
@@ -65,7 +65,7 @@ function Dashboard() {
             <Link to="/jobs" className="text-xs font-semibold text-primary">See all →</Link>
           </div>
           {jobs.isError ? <Empty title="Jobs could not load" hint="Please refresh or reconnect Firecrawl." /> : jobs.isLoading ? <Skel n={3} /> : (jobs.data?.jobs.length ?? 0) === 0 ? (
-            <Empty title="👋 Welcome to Zenith!" hint="Start by browsing jobs and submitting your first application!" />
+            <Empty title="👋 Welcome to OkJob!" hint="Start by browsing jobs and submitting your first application!" />
           ) : (
             <div className="space-y-3">
               {jobs.data!.jobs.slice(0, 4).map((j: any) => (

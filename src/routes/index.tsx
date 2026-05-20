@@ -7,10 +7,10 @@ import { SiteFooter } from "@/components/zenith/SiteFooter";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "ZENITH — Reach Your Zenith" },
+      { title: "OkJob — Reach Your OkJob" },
       { name: "description", content: "AI Operating System for job applications. Auto-discovery, ATS optimization, recruiter monitoring, and smart follow-ups in one bold platform." },
-      { property: "og:title", content: "ZENITH — AI Career Operating System" },
-      { property: "og:description", content: "Reach Your Zenith. AI-powered job discovery, ATS optimization, recruiter monitoring." },
+      { property: "og:title", content: "OkJob — AI Career Operating System" },
+      { property: "og:description", content: "Reach Your OkJob. AI-powered job discovery, ATS optimization, recruiter monitoring." },
     ],
   }),
   component: Landing,
@@ -68,7 +68,7 @@ function Landing() {
             AI Career Operating System
           </div>
           <h1 className="mx-auto mt-6 max-w-3xl text-5xl font-extrabold leading-[1.05] tracking-tight md:text-7xl">
-            Reach Your <span className="text-gradient-brand">Zenith</span> 🚀
+            Reach Your <span className="text-gradient-brand">OkJob</span> 🚀
           </h1>
           <p className="mx-auto mt-5 max-w-2xl text-lg text-muted-foreground">
             Auto-discover the best jobs, rewrite your resume per role, monitor recruiter emails, and never miss a follow-up. The operating system every job seeker deserves.
@@ -178,7 +178,7 @@ function Landing() {
       {/* CTA */}
       <section className="mx-auto max-w-4xl px-4 py-20 text-center">
         <h2 className="text-4xl font-extrabold tracking-tight md:text-5xl">
-          Your next role is one <span className="text-gradient-brand">Zenith</span> away
+          Your next role is one <span className="text-gradient-brand">OkJob</span> away
         </h2>
         <Link to="/signup" className="mt-8 inline-flex items-center gap-2 rounded-lg bg-gradient-brand px-7 py-3.5 text-base font-semibold text-white shadow-glow">
           Start Free <ArrowRight className="h-4 w-4" />

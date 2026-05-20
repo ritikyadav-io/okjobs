@@ -156,10 +156,7 @@
   }
 }
 
-/* Thin, theme-aware scrollbars (no harsh white line on the right) */
-* { scrollbar-width: thin; scrollbar-color: color-mix(in oklab, var(--foreground) 18%, transparent) transparent; }
-*::-webkit-scrollbar { width: 8px; height: 8px; }
-*::-webkit-scrollbar-track { background: transparent; }
-*::-webkit-scrollbar-thumb { background: color-mix(in oklab, var(--foreground) 18%, transparent); border-radius: 8px; }
-*::-webkit-scrollbar-thumb:hover { background: color-mix(in oklab, var(--foreground) 32%, transparent); }
+/* Invisible scrollbars — remove the right-side line entirely while keeping scroll */
+* { scrollbar-width: none; -ms-overflow-style: none; }
+*::-webkit-scrollbar { width: 0; height: 0; background: transparent; }
 html, body { overflow-x: hidden; }
