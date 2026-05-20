@@ -15,6 +15,7 @@ import { Route as SignupRouteImport } from './routes/signup'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ResumeLabRouteImport } from './routes/resume-lab'
 import { Route as RecruiterInboxRouteImport } from './routes/recruiter-inbox'
+import { Route as QueueRouteImport } from './routes/queue'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as LoginRouteImport } from './routes/login'
@@ -28,6 +29,7 @@ import { Route as ApplicationsRouteImport } from './routes/applications'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiPublicCronScrapeJobsRouteImport } from './routes/api/public/cron/scrape-jobs'
+import { Route as ApiPublicCronQueueWorkerRouteImport } from './routes/api/public/cron/queue-worker'
 import { Route as ApiPublicCronGmailSyncRouteImport } from './routes/api/public/cron/gmail-sync'
 import { Route as ApiPublicCronDailyBriefingRouteImport } from './routes/api/public/cron/daily-briefing'
 
@@ -59,6 +61,11 @@ const ResumeLabRoute = ResumeLabRouteImport.update({
 const RecruiterInboxRoute = RecruiterInboxRouteImport.update({
   id: '/recruiter-inbox',
   path: '/recruiter-inbox',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const QueueRoute = QueueRouteImport.update({
+  id: '/queue',
+  path: '/queue',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrivacyRoute = PrivacyRouteImport.update({
@@ -126,6 +133,12 @@ const ApiPublicCronScrapeJobsRoute = ApiPublicCronScrapeJobsRouteImport.update({
   path: '/api/public/cron/scrape-jobs',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicCronQueueWorkerRoute =
+  ApiPublicCronQueueWorkerRouteImport.update({
+    id: '/api/public/cron/queue-worker',
+    path: '/api/public/cron/queue-worker',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicCronGmailSyncRoute = ApiPublicCronGmailSyncRouteImport.update({
   id: '/api/public/cron/gmail-sync',
   path: '/api/public/cron/gmail-sync',
@@ -151,6 +164,7 @@ export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
   '/privacy': typeof PrivacyRoute
+  '/queue': typeof QueueRoute
   '/recruiter-inbox': typeof RecruiterInboxRoute
   '/resume-lab': typeof ResumeLabRoute
   '/settings': typeof SettingsRoute
@@ -159,6 +173,7 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/api/public/cron/daily-briefing': typeof ApiPublicCronDailyBriefingRoute
   '/api/public/cron/gmail-sync': typeof ApiPublicCronGmailSyncRoute
+  '/api/public/cron/queue-worker': typeof ApiPublicCronQueueWorkerRoute
   '/api/public/cron/scrape-jobs': typeof ApiPublicCronScrapeJobsRoute
 }
 export interface FileRoutesByTo {
@@ -174,6 +189,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
   '/privacy': typeof PrivacyRoute
+  '/queue': typeof QueueRoute
   '/recruiter-inbox': typeof RecruiterInboxRoute
   '/resume-lab': typeof ResumeLabRoute
   '/settings': typeof SettingsRoute
@@ -182,6 +198,7 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/api/public/cron/daily-briefing': typeof ApiPublicCronDailyBriefingRoute
   '/api/public/cron/gmail-sync': typeof ApiPublicCronGmailSyncRoute
+  '/api/public/cron/queue-worker': typeof ApiPublicCronQueueWorkerRoute
   '/api/public/cron/scrape-jobs': typeof ApiPublicCronScrapeJobsRoute
 }
 export interface FileRoutesById {
@@ -198,6 +215,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/onboarding': typeof OnboardingRoute
   '/privacy': typeof PrivacyRoute
+  '/queue': typeof QueueRoute
   '/recruiter-inbox': typeof RecruiterInboxRoute
   '/resume-lab': typeof ResumeLabRoute
   '/settings': typeof SettingsRoute
@@ -206,6 +224,7 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/api/public/cron/daily-briefing': typeof ApiPublicCronDailyBriefingRoute
   '/api/public/cron/gmail-sync': typeof ApiPublicCronGmailSyncRoute
+  '/api/public/cron/queue-worker': typeof ApiPublicCronQueueWorkerRoute
   '/api/public/cron/scrape-jobs': typeof ApiPublicCronScrapeJobsRoute
 }
 export interface FileRouteTypes {
@@ -223,6 +242,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/onboarding'
     | '/privacy'
+    | '/queue'
     | '/recruiter-inbox'
     | '/resume-lab'
     | '/settings'
@@ -231,6 +251,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/api/public/cron/daily-briefing'
     | '/api/public/cron/gmail-sync'
+    | '/api/public/cron/queue-worker'
     | '/api/public/cron/scrape-jobs'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -246,6 +267,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/onboarding'
     | '/privacy'
+    | '/queue'
     | '/recruiter-inbox'
     | '/resume-lab'
     | '/settings'
@@ -254,6 +276,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/api/public/cron/daily-briefing'
     | '/api/public/cron/gmail-sync'
+    | '/api/public/cron/queue-worker'
     | '/api/public/cron/scrape-jobs'
   id:
     | '__root__'
@@ -269,6 +292,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/onboarding'
     | '/privacy'
+    | '/queue'
     | '/recruiter-inbox'
     | '/resume-lab'
     | '/settings'
@@ -277,6 +301,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/api/public/cron/daily-briefing'
     | '/api/public/cron/gmail-sync'
+    | '/api/public/cron/queue-worker'
     | '/api/public/cron/scrape-jobs'
   fileRoutesById: FileRoutesById
 }
@@ -293,6 +318,7 @@ export interface RootRouteChildren {
   LoginRoute: typeof LoginRoute
   OnboardingRoute: typeof OnboardingRoute
   PrivacyRoute: typeof PrivacyRoute
+  QueueRoute: typeof QueueRoute
   RecruiterInboxRoute: typeof RecruiterInboxRoute
   ResumeLabRoute: typeof ResumeLabRoute
   SettingsRoute: typeof SettingsRoute
@@ -301,6 +327,7 @@ export interface RootRouteChildren {
   TermsRoute: typeof TermsRoute
   ApiPublicCronDailyBriefingRoute: typeof ApiPublicCronDailyBriefingRoute
   ApiPublicCronGmailSyncRoute: typeof ApiPublicCronGmailSyncRoute
+  ApiPublicCronQueueWorkerRoute: typeof ApiPublicCronQueueWorkerRoute
   ApiPublicCronScrapeJobsRoute: typeof ApiPublicCronScrapeJobsRoute
 }
 
@@ -346,6 +373,13 @@ declare module '@tanstack/react-router' {
       path: '/recruiter-inbox'
       fullPath: '/recruiter-inbox'
       preLoaderRoute: typeof RecruiterInboxRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/queue': {
+      id: '/queue'
+      path: '/queue'
+      fullPath: '/queue'
+      preLoaderRoute: typeof QueueRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/privacy': {
@@ -439,6 +473,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCronScrapeJobsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/cron/queue-worker': {
+      id: '/api/public/cron/queue-worker'
+      path: '/api/public/cron/queue-worker'
+      fullPath: '/api/public/cron/queue-worker'
+      preLoaderRoute: typeof ApiPublicCronQueueWorkerRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/cron/gmail-sync': {
       id: '/api/public/cron/gmail-sync'
       path: '/api/public/cron/gmail-sync'
@@ -469,6 +510,7 @@ const rootRouteChildren: RootRouteChildren = {
   LoginRoute: LoginRoute,
   OnboardingRoute: OnboardingRoute,
   PrivacyRoute: PrivacyRoute,
+  QueueRoute: QueueRoute,
   RecruiterInboxRoute: RecruiterInboxRoute,
   ResumeLabRoute: ResumeLabRoute,
   SettingsRoute: SettingsRoute,
@@ -477,6 +519,7 @@ const rootRouteChildren: RootRouteChildren = {
   TermsRoute: TermsRoute,
   ApiPublicCronDailyBriefingRoute: ApiPublicCronDailyBriefingRoute,
   ApiPublicCronGmailSyncRoute: ApiPublicCronGmailSyncRoute,
+  ApiPublicCronQueueWorkerRoute: ApiPublicCronQueueWorkerRoute,
   ApiPublicCronScrapeJobsRoute: ApiPublicCronScrapeJobsRoute,
 }
 export const routeTree = rootRouteImport

@@ -14,6 +14,7 @@ import {
   Plug,
   User,
   Zap,
+  ListChecks,
   type LucideIcon,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
@@ -34,6 +35,7 @@ const NAV: NavItem[] = [
   { to: "/calendar", label: "Calendar", icon: Calendar, color: "text-cyan" },
   { to: "/briefing", label: "Daily Briefing", icon: Sunrise, color: "text-gold" },
   { to: "/integrations", label: "Integrations", icon: Plug, color: "text-primary" },
+  { to: "/queue", label: "Job Queue", icon: ListChecks, color: "text-cyan" },
   { to: "/settings", label: "Settings", icon: Settings, color: "text-muted-foreground" },
 ];
 

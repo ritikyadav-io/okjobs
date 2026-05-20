@@ -53,3 +53,19 @@ export const generateSuggestedReply = createServerFn({ method: "POST" })
     const reply = await generateSuggestedReplyText({ subject: email.subject ?? "", body: email.body ?? "", sender: email.sender ?? "", type: email.type ?? "", userName: profile?.full_name ?? "" });
     return { reply };
   });
+
+export const deleteRecruiterEmail = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ id: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const { data: row } = await supabase.from("recruiter_emails").select("gmail_message_id").eq("id", data.id).eq("user_id", userId).maybeSingle();
+    const { error } = await supabase.from("recruiter_emails").delete().eq("id", data.id).eq("user_id", userId);
+    if (error) throw new Error(error.message);
+    if (row?.gmail_message_id) {
+      // Trash in Gmail so reconciliation stays in sync.
+      await fetch(`${GMAIL_GW}/users/me/messages/${row.gmail_message_id}/trash`, { method: "POST", headers: gwHeaders() }).catch(() => null);
+    }
+    return { ok: true };
+  });
+

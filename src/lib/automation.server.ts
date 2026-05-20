@@ -244,10 +244,21 @@ export async function getConnectedGmailEmail(): Promise<string | null> {
 
 export async function syncRecruiterEmailsForUser(db: Db, userId: string) {
   const headers = gatewayHeaders("GOOGLE_MAIL_API_KEY");
-  const listRes = await fetch(`${GMAIL_GW}/users/me/messages?maxResults=50&q=${encodeURIComponent(RECRUITER_QUERY)}`, { headers });
-  if (!listRes.ok) throw new Error(`Gmail list failed [${listRes.status}]: ${(await listRes.text()).slice(0, 300)}`);
-  const list = await listRes.json();
-  const ids: string[] = (list.messages ?? []).map((m: any) => m.id).filter(Boolean);
+  // Paginate the broader 60-day window so we can reconcile deletes accurately.
+  const presentIds = new Set<string>();
+  let pageToken: string | undefined;
+  let pages = 0;
+  do {
+    const url = `${GMAIL_GW}/users/me/messages?maxResults=100&q=${encodeURIComponent(RECRUITER_QUERY)}${pageToken ? `&pageToken=${pageToken}` : ""}`;
+    const listRes = await fetch(url, { headers });
+    if (!listRes.ok) throw new Error(`Gmail list failed [${listRes.status}]: ${(await listRes.text()).slice(0, 300)}`);
+    const list = await listRes.json();
+    for (const m of list.messages ?? []) if (m?.id) presentIds.add(m.id);
+    pageToken = list.nextPageToken;
+    pages++;
+  } while (pageToken && pages < 5);
+
+  const ids = Array.from(presentIds);
   let added = 0;
   let classified = 0;
 
@@ -291,8 +302,23 @@ export async function syncRecruiterEmailsForUser(db: Db, userId: string) {
     try { await markGmailRead(id); } catch (error) { console.warn("Gmail read update skipped", error); }
   }
 
-  return { scanned: ids.length, classified, added };
+  // Reconcile deletes: any local row whose gmail_message_id isn't in the current Gmail list is gone.
+  let removed = 0;
+  const { data: locals } = await db
+    .from("recruiter_emails")
+    .select("id, gmail_message_id")
+    .eq("user_id", userId)
+    .not("gmail_message_id", "is", null);
+  const stale = (locals ?? []).filter((r: any) => r.gmail_message_id && !presentIds.has(r.gmail_message_id));
+  if (stale.length) {
+    const staleIds = stale.map((r: any) => r.id);
+    const { error: delErr } = await db.from("recruiter_emails").delete().in("id", staleIds);
+    if (!delErr) removed = staleIds.length;
+  }
+
+  return { scanned: ids.length, classified, added, removed };
 }
+
 
 export async function syncRecruiterEmailsForConnectedProfile() {
   const email = await getConnectedGmailEmail();

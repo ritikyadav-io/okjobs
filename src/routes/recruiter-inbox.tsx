@@ -1,10 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/zenith/AppShell";
 import { PageHeader } from "@/components/zenith/PageHeader";
-import { Mail, RefreshCw, CheckCircle2, Sparkles } from "lucide-react";
+import { Mail, RefreshCw, CheckCircle2, Sparkles, Trash2 } from "lucide-react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { generateSuggestedReply, listRecruiterEmails, syncRecruiterEmails, updateEmailReplyStatus } from "@/lib/gmail.functions";
+import { deleteRecruiterEmail, generateSuggestedReply, listRecruiterEmails, syncRecruiterEmails, updateEmailReplyStatus } from "@/lib/gmail.functions";
 import { toast } from "sonner";
 import { useRealtimeRefresh } from "@/hooks/use-realtime-refresh";
 import { useState } from "react";
@@ -28,18 +28,39 @@ function InboxPage() {
   const syncFn = useServerFn(syncRecruiterEmails);
   const updFn = useServerFn(updateEmailReplyStatus);
   const replyFn = useServerFn(generateSuggestedReply);
+  const delFn = useServerFn(deleteRecruiterEmail);
   const [reply, setReply] = useState<Record<string, string>>({});
   useRealtimeRefresh(["recruiter_emails", "applications", "calendar_events"], [["emails"], ["applications"], ["events"], ["dashboard-stats"]]);
 
   const emails = useQuery({ queryKey: ["emails"], queryFn: () => listFn(), staleTime: 30_000, placeholderData: (p) => p });
   const sync = useMutation({
     mutationFn: () => syncFn(),
-    onSuccess: (r) => { toast.success(`Found ${r.added} new emails`); qc.invalidateQueries({ queryKey: ["emails"] }); qc.invalidateQueries({ queryKey: ["dashboard-stats"] }); },
+    onSuccess: (r: any) => {
+      const removed = r?.removed ? ` · ${r.removed} removed` : "";
+      toast.success(`Found ${r.added} new${removed}`);
+      qc.invalidateQueries({ queryKey: ["emails"] });
+      qc.invalidateQueries({ queryKey: ["dashboard-stats"] });
+    },
     onError: (e: any) => toast.error(e.message),
   });
   const upd = useMutation({
     mutationFn: (v: { id: string; status: any }) => updFn({ data: v }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["emails"] }),
+  });
+  const del = useMutation({
+    mutationFn: (id: string) => delFn({ data: { id } }),
+    onMutate: async (id: string) => {
+      await qc.cancelQueries({ queryKey: ["emails"] });
+      const prev = qc.getQueryData<any>(["emails"]);
+      qc.setQueryData(["emails"], (old: any) => old ? { ...old, emails: old.emails.filter((e: any) => e.id !== id) } : old);
+      return { prev };
+    },
+    onError: (e: any, _id, ctx: any) => {
+      if (ctx?.prev) qc.setQueryData(["emails"], ctx.prev);
+      toast.error(e.message ?? "Delete failed");
+    },
+    onSuccess: () => toast.success("Email removed"),
+    onSettled: () => qc.invalidateQueries({ queryKey: ["emails"] }),
   });
   const suggested = useMutation({
     mutationFn: (id: string) => replyFn({ data: { emailId: id } }),
@@ -92,6 +113,7 @@ function InboxPage() {
                     <button onClick={() => suggested.mutate(e.id)} className="inline-flex items-center gap-1 rounded-lg bg-gradient-brand px-3 py-1.5 text-xs font-semibold text-white shadow-glow"><Sparkles className="h-3.5 w-3.5" /> Suggested reply</button>
                     <button onClick={() => upd.mutate({ id: e.id, status: "replied" })} className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-xs font-semibold hover:bg-accent"><Mail className="h-3.5 w-3.5" /> Mark replied</button>
                     <button onClick={() => upd.mutate({ id: e.id, status: "handled" })} className="inline-flex items-center gap-1 rounded-lg border border-border px-3 py-1.5 text-xs font-semibold hover:bg-accent"><CheckCircle2 className="h-3.5 w-3.5" /> Mark handled</button>
+                    <button onClick={() => del.mutate(e.id)} className="inline-flex items-center gap-1 rounded-lg border border-destructive/40 px-3 py-1.5 text-xs font-semibold text-destructive hover:bg-destructive/10"><Trash2 className="h-3.5 w-3.5" /> Delete</button>
                     <span className="ml-auto text-[10px] font-bold uppercase text-muted-foreground">{e.reply_status}</span>
                   </div>
                   {reply[e.id] && <pre className="mt-3 whitespace-pre-wrap rounded-xl border border-border bg-background p-3 text-xs text-muted-foreground">{reply[e.id]}</pre>}

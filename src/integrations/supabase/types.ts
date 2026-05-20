@@ -215,6 +215,66 @@ export type Database = {
         }
         Relationships: []
       }
+      job_queue: {
+        Row: {
+          attempts: number
+          cancelled_at: string | null
+          created_at: string
+          finished_at: string | null
+          id: string
+          last_error: string | null
+          max_attempts: number
+          payload: Json
+          priority: number
+          progress: number
+          result: Json | null
+          scheduled_for: string
+          started_at: string | null
+          status: string
+          task: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          attempts?: number
+          cancelled_at?: string | null
+          created_at?: string
+          finished_at?: string | null
+          id?: string
+          last_error?: string | null
+          max_attempts?: number
+          payload?: Json
+          priority?: number
+          progress?: number
+          result?: Json | null
+          scheduled_for?: string
+          started_at?: string | null
+          status?: string
+          task: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          attempts?: number
+          cancelled_at?: string | null
+          created_at?: string
+          finished_at?: string | null
+          id?: string
+          last_error?: string | null
+          max_attempts?: number
+          payload?: Json
+          priority?: number
+          progress?: number
+          result?: Json | null
+          scheduled_for?: string
+          started_at?: string | null
+          status?: string
+          task?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       jobs: {
         Row: {
           ats_score: number | null
