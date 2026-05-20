@@ -6,7 +6,8 @@ import { MapPin, Wifi, Building2, Bookmark, ExternalLink, RefreshCw, Search } fr
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { listJobs, scrapeJobs, saveJob } from "@/lib/jobs.functions";
+import { listJobs, saveJob } from "@/lib/jobs.functions";
+import { enqueueTask } from "@/lib/queue.functions";
 import { toast } from "sonner";
 import { useRealtimeRefresh } from "@/hooks/use-realtime-refresh";
 
@@ -18,9 +19,9 @@ export const Route = createFileRoute("/jobs")({
 function JobsPage() {
   const qc = useQueryClient();
   const listFn = useServerFn(listJobs);
-  const scrapeFn = useServerFn(scrapeJobs);
+  const enqueueFn = useServerFn(enqueueTask);
   const saveFn = useServerFn(saveJob);
-  useRealtimeRefresh(["jobs", "applications"], [["jobs"], ["applications"], ["dashboard-stats"]]);
+  useRealtimeRefresh(["jobs", "applications", "job_queue"], [["jobs"], ["applications"], ["dashboard-stats"], ["queue"]]);
 
   const [minATS, setMinATS] = useState(0);
   const [remoteOnly, setRemoteOnly] = useState(false);
@@ -29,12 +30,9 @@ function JobsPage() {
   const jobs = useQuery({ queryKey: ["jobs"], queryFn: () => listFn(), staleTime: 20_000 });
 
   const scrape = useMutation({
-    mutationFn: (q: string) => scrapeFn({ data: { query: q, limit: 60 } }),
-    onSuccess: async (r) => {
-      toast.success(`Scraped ${r.scanned} · ${r.inserted} new${r.updated ? ` · ${r.updated} updated` : ""}`);
-      await qc.refetchQueries({ queryKey: ["jobs"] });
-    },
-    onError: (e: any) => toast.error(e.message ?? "Scrape failed"),
+    mutationFn: (q: string) => enqueueFn({ data: { task: "scrape_jobs", payload: { query: q, limit: 80 } } }),
+    onSuccess: () => toast.success("Scrape queued — new jobs will appear here live."),
+    onError: (e: any) => toast.error(e.message ?? "Failed to queue scrape"),
   });
   const save = useMutation({
     mutationFn: (id: string) => saveFn({ data: { jobId: id } }),
@@ -57,7 +55,7 @@ function JobsPage() {
             disabled={scrape.isPending}
             className="inline-flex items-center gap-2 rounded-lg bg-gradient-brand px-4 py-2 text-sm font-semibold text-white shadow-glow disabled:opacity-60"
           >
-            <RefreshCw className={`h-4 w-4 ${scrape.isPending ? "animate-spin" : ""}`} /> {scrape.isPending ? "Scraping…" : "Scrape jobs"}
+            <RefreshCw className={`h-4 w-4 ${scrape.isPending ? "animate-spin" : ""}`} /> {scrape.isPending ? "Queuing…" : "Scrape jobs"}
           </button>
         }
       />
