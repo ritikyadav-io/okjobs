@@ -2,12 +2,13 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/zenith/AppShell";
 import { PageHeader } from "@/components/zenith/PageHeader";
 import { ATSRing } from "@/components/zenith/ATSRing";
-import { MapPin, Wifi, Building2, Bookmark, ExternalLink, RefreshCw, Search } from "lucide-react";
+import { MapPin, Wifi, Building2, Bookmark, ExternalLink, RefreshCw, Search, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { listJobs, saveJob } from "@/lib/jobs.functions";
 import { enqueueTask } from "@/lib/queue.functions";
+import { generateResumeForJob } from "@/lib/resume.functions";
 import { toast } from "sonner";
 import { useRealtimeRefresh } from "@/hooks/use-realtime-refresh";
 
