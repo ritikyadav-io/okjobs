@@ -120,9 +120,17 @@ function JobsPage() {
               </div>
               <div className="mt-4 flex gap-2">
                 <button onClick={() => save.mutate(j.id)} disabled={save.isPending} className="flex-1 rounded-lg bg-gradient-brand py-2 text-sm font-semibold text-white shadow-glow disabled:opacity-60">Save & track</button>
-                <a href={j.url} target="_blank" rel="noreferrer" className="grid h-9 w-9 place-items-center rounded-lg border border-border hover:bg-accent"><ExternalLink className="h-4 w-4" /></a>
-                <button className="grid h-9 w-9 place-items-center rounded-lg border border-border hover:bg-accent"><Bookmark className="h-4 w-4" /></button>
+                <a href={j.url} target="_blank" rel="noreferrer" className="grid h-9 w-9 place-items-center rounded-lg border border-border hover:bg-accent" title="Open posting"><ExternalLink className="h-4 w-4" /></a>
+                <button className="grid h-9 w-9 place-items-center rounded-lg border border-border hover:bg-accent" title="Bookmark"><Bookmark className="h-4 w-4" /></button>
               </div>
+              <button
+                onClick={() => generate.mutate(j.id)}
+                disabled={generate.isPending}
+                className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-lg border-2 border-primary/40 bg-primary/5 py-2 text-xs font-bold text-primary hover:bg-primary/10 disabled:opacity-60"
+              >
+                <Sparkles className={`h-3.5 w-3.5 ${genId === j.id ? "animate-pulse" : ""}`} />
+                {genId === j.id ? "Generating ATS resume…" : "Generate ATS Resume"}
+              </button>
             </div>
           ))}
         </div>
