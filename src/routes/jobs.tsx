@@ -38,11 +38,12 @@ function JobsPage() {
     onSuccess: () => toast.success("Scrape queued — new jobs will appear here live."),
     onError: (e: any) => toast.error(e.message ?? "Failed to queue scrape"),
   });
-  const save = useMutation({
-    mutationFn: (id: string) => saveFn({ data: { jobId: id } }),
-    onSuccess: () => { toast.success("Saved to Applications"); qc.invalidateQueries({ queryKey: ["applications"] }); qc.invalidateQueries({ queryKey: ["dashboard-stats"] }); },
-    onError: (e: any) => toast.error(e.message ?? "Save failed"),
+  const generate = useMutation({
+    mutationFn: (id: string) => { setGenId(id); return genFn({ data: { jobId: id } }); },
+    onSuccess: (r: any) => { setGenId(null); toast.success(`ATS resume ready — ${r.title} (score ${r.atsScore}%)`); qc.invalidateQueries({ queryKey: ["resume-versions"] }); },
+    onError: (e: any) => { setGenId(null); toast.error(e.message ?? "Resume generation failed"); },
   });
+
 
   const items = (jobs.data?.jobs ?? []).filter((j: any) =>
     (j.ats_score ?? 0) >= minATS && (!remoteOnly || j.remote === "Remote"),
