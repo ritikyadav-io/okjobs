@@ -151,3 +151,55 @@ export const listResumeVersions = createServerFn({ method: "GET" })
     const { data } = await supabase.from("resume_versions").select("*").order("version", { ascending: false });
     return { versions: data ?? [] };
   });
+
+export const generateResumeForJob = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: unknown) => z.object({ jobId: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const [{ data: job }, { data: baseResume }, { data: profile }] = await Promise.all([
+      supabase.from("jobs").select("*").eq("id", data.jobId).maybeSingle(),
+      supabase.from("resume_versions").select("content").eq("user_id", userId).is("job_id", null).order("version", { ascending: false }).limit(1).maybeSingle(),
+      supabase.from("profiles").select("full_name, email, phone, linkedin, portfolio, preferred_role, resume_skills").eq("id", userId).maybeSingle(),
+    ]);
+    if (!job) throw new Error("Job not found");
+
+    const profileSummary = profile
+      ? `Name: ${profile.full_name ?? ""}\nEmail: ${profile.email ?? ""}\nPhone: ${profile.phone ?? ""}\nLinkedIn: ${profile.linkedin ?? ""}\nPortfolio: ${profile.portfolio ?? ""}\nPreferred role: ${profile.preferred_role ?? ""}\nSkills: ${(profile.resume_skills ?? []).join(", ")}`
+      : "";
+    const seed = baseResume?.content?.trim() || profileSummary || "No prior resume on file. Build a strong starter resume from the profile and job context.";
+    const jobDesc = `${job.title} at ${job.company}\nLocation: ${job.location ?? ""} ${job.remote ?? ""}\n\n${job.description ?? ""}`;
+
+    const optimized = await ai([
+      { role: "system", content: "You are an ATS resume engineer. Rewrite the candidate's resume to maximize ATS match and recruiter readability for the target job. Preserve truthful facts; never fabricate experience. Weave required keywords naturally into Summary, Skills, Experience, and Projects. Quantify achievements where possible. Output a clean plain-text resume only — no commentary." },
+      { role: "user", content: `TARGET JOB:\n${jobDesc}\n\nCANDIDATE PROFILE & RESUME:\n${profileSummary}\n\n${seed}` },
+    ]);
+
+    const scoreRaw = await ai(
+      [
+        { role: "system", content: "Score the resume for the job. Output strict JSON: {score:0-100, matched:[string], missing:[string], suggestions:[string]}." },
+        { role: "user", content: `JOB:\n${jobDesc}\n\nRESUME:\n${optimized}` },
+      ],
+      true,
+    );
+    let ats = 0;
+    try { ats = Math.max(0, Math.min(100, Number(JSON.parse(scoreRaw).score ?? 0))); } catch { /* ignore */ }
+
+    const { data: existing } = await supabase.from("resume_versions").select("version").eq("user_id", userId).order("version", { ascending: false }).limit(1).maybeSingle();
+    const version = (existing?.version ?? 0) + 1;
+    const safeCompany = (job.company ?? "Company").replace(/[^a-zA-Z0-9]+/g, "_").slice(0, 40);
+    const safeTitle = (job.title ?? "Role").replace(/[^a-zA-Z0-9]+/g, "_").slice(0, 40);
+    const title = `Resume_${safeTitle}_${safeCompany}_v${version}`;
+
+    const { data: row, error } = await supabase.from("resume_versions").insert({
+      user_id: userId,
+      content: optimized,
+      version,
+      title,
+      ats_score: ats,
+      job_id: data.jobId,
+    } as any).select().single();
+    if (error) throw new Error(error.message);
+
+    return { resume: optimized, version, id: row.id, atsScore: ats, title };
+  });
