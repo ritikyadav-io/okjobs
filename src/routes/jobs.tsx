@@ -22,7 +22,10 @@ function JobsPage() {
   const listFn = useServerFn(listJobs);
   const enqueueFn = useServerFn(enqueueTask);
   const saveFn = useServerFn(saveJob);
+  const genFn = useServerFn(generateResumeForJob);
   useRealtimeRefresh(["jobs", "applications", "job_queue"], [["jobs"], ["applications"], ["dashboard-stats"], ["queue"]]);
+
+  const [genId, setGenId] = useState<string | null>(null);
 
   const [minATS, setMinATS] = useState(0);
   const [remoteOnly, setRemoteOnly] = useState(false);
