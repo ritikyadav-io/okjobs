@@ -2,12 +2,13 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/zenith/AppShell";
 import { PageHeader } from "@/components/zenith/PageHeader";
 import { ATSRing } from "@/components/zenith/ATSRing";
-import { MapPin, Wifi, Building2, Bookmark, ExternalLink, RefreshCw, Search } from "lucide-react";
+import { MapPin, Wifi, Building2, Bookmark, ExternalLink, RefreshCw, Search, Sparkles } from "lucide-react";
 import { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { listJobs, saveJob } from "@/lib/jobs.functions";
 import { enqueueTask } from "@/lib/queue.functions";
+import { generateResumeForJob } from "@/lib/resume.functions";
 import { toast } from "sonner";
 import { useRealtimeRefresh } from "@/hooks/use-realtime-refresh";
 
@@ -21,7 +22,10 @@ function JobsPage() {
   const listFn = useServerFn(listJobs);
   const enqueueFn = useServerFn(enqueueTask);
   const saveFn = useServerFn(saveJob);
+  const genFn = useServerFn(generateResumeForJob);
   useRealtimeRefresh(["jobs", "applications", "job_queue"], [["jobs"], ["applications"], ["dashboard-stats"], ["queue"]]);
+
+  const [genId, setGenId] = useState<string | null>(null);
 
   const [minATS, setMinATS] = useState(0);
   const [remoteOnly, setRemoteOnly] = useState(false);
@@ -39,6 +43,12 @@ function JobsPage() {
     onSuccess: () => { toast.success("Saved to Applications"); qc.invalidateQueries({ queryKey: ["applications"] }); qc.invalidateQueries({ queryKey: ["dashboard-stats"] }); },
     onError: (e: any) => toast.error(e.message ?? "Save failed"),
   });
+  const generate = useMutation({
+    mutationFn: (id: string) => { setGenId(id); return genFn({ data: { jobId: id } }); },
+    onSuccess: (r: any) => { setGenId(null); toast.success(`ATS resume ready — ${r.title} (score ${r.atsScore}%)`); qc.invalidateQueries({ queryKey: ["resume-versions"] }); },
+    onError: (e: any) => { setGenId(null); toast.error(e.message ?? "Resume generation failed"); },
+  });
+
 
   const items = (jobs.data?.jobs ?? []).filter((j: any) =>
     (j.ats_score ?? 0) >= minATS && (!remoteOnly || j.remote === "Remote"),
@@ -110,9 +120,17 @@ function JobsPage() {
               </div>
               <div className="mt-4 flex gap-2">
                 <button onClick={() => save.mutate(j.id)} disabled={save.isPending} className="flex-1 rounded-lg bg-gradient-brand py-2 text-sm font-semibold text-white shadow-glow disabled:opacity-60">Save & track</button>
-                <a href={j.url} target="_blank" rel="noreferrer" className="grid h-9 w-9 place-items-center rounded-lg border border-border hover:bg-accent"><ExternalLink className="h-4 w-4" /></a>
-                <button className="grid h-9 w-9 place-items-center rounded-lg border border-border hover:bg-accent"><Bookmark className="h-4 w-4" /></button>
+                <a href={j.url} target="_blank" rel="noreferrer" className="grid h-9 w-9 place-items-center rounded-lg border border-border hover:bg-accent" title="Open posting"><ExternalLink className="h-4 w-4" /></a>
+                <button className="grid h-9 w-9 place-items-center rounded-lg border border-border hover:bg-accent" title="Bookmark"><Bookmark className="h-4 w-4" /></button>
               </div>
+              <button
+                onClick={() => generate.mutate(j.id)}
+                disabled={generate.isPending}
+                className="mt-2 inline-flex w-full items-center justify-center gap-2 rounded-lg border-2 border-primary/40 bg-primary/5 py-2 text-xs font-bold text-primary hover:bg-primary/10 disabled:opacity-60"
+              >
+                <Sparkles className={`h-3.5 w-3.5 ${genId === j.id ? "animate-pulse" : ""}`} />
+                {genId === j.id ? "Generating ATS resume…" : "Generate ATS Resume"}
+              </button>
             </div>
           ))}
         </div>

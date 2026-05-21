@@ -435,6 +435,7 @@ export type Database = {
           google_doc_id: string | null
           google_doc_url: string | null
           id: string
+          job_id: string | null
           title: string
           user_id: string
           version: number
@@ -446,6 +447,7 @@ export type Database = {
           google_doc_id?: string | null
           google_doc_url?: string | null
           id?: string
+          job_id?: string | null
           title?: string
           user_id: string
           version?: number
@@ -457,6 +459,7 @@ export type Database = {
           google_doc_id?: string | null
           google_doc_url?: string | null
           id?: string
+          job_id?: string | null
           title?: string
           user_id?: string
           version?: number
