@@ -14,7 +14,7 @@ import {
   Plug,
   User,
   Zap,
-  ListChecks,
+  
   type LucideIcon,
 } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
@@ -35,7 +35,7 @@ const NAV: NavItem[] = [
   { to: "/calendar", label: "Calendar", icon: Calendar, color: "text-cyan" },
   { to: "/briefing", label: "Daily Briefing", icon: Sunrise, color: "text-gold" },
   { to: "/integrations", label: "Integrations", icon: Plug, color: "text-primary" },
-  { to: "/queue", label: "Job Queue", icon: ListChecks, color: "text-cyan" },
+  
   { to: "/settings", label: "Settings", icon: Settings, color: "text-muted-foreground" },
 ];
 
@@ -161,7 +161,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <span className="grid h-7 w-7 place-items-center rounded-md bg-gradient-brand shadow-glow">
                 <Zap className="h-3.5 w-3.5 text-white" strokeWidth={3} />
               </span>
-              <span className="text-base">OkJobs</span>
+              <span className="text-base"><span style={{color:'#2BB3EE'}}>Ok</span><span style={{color:'#5A6B2F'}}>Jobs</span></span>
             </Link>
             <button
               aria-label="Notifications"
