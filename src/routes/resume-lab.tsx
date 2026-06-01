@@ -9,7 +9,7 @@ import { analyzeResume, optimizeResume, generateCoverLetter, exportResumeToDocs,
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/resume-lab")({
-  head: () => ({ meta: [{ title: "Resume Lab — OkJob" }] }),
+  head: () => ({ meta: [{ title: "Resume Lab — OkJobs" }] }),
   component: ResumeLab,
 });
 

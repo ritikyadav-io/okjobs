@@ -10,7 +10,7 @@ import { RotateCw, X, Trash2, Play, AlertTriangle, CheckCircle2, Clock, Loader2 
 import { useMemo, useState } from "react";
 
 export const Route = createFileRoute("/queue")({
-  head: () => ({ meta: [{ title: "Job Queue — OkJob" }] }),
+  head: () => ({ meta: [{ title: "Job Queue — OkJobs" }] }),
   component: QueuePage,
 });
 

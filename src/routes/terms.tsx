@@ -4,8 +4,8 @@ import { PublicLayout } from "@/components/zenith/PublicLayout";
 export const Route = createFileRoute("/terms")({
   head: () => ({
     meta: [
-      { title: "Terms of Service — OkJob" },
-      { name: "description", content: "The terms governing your use of OkJob." },
+      { title: "Terms of Service — OkJobs" },
+      { name: "description", content: "The terms governing your use of OkJobs." },
     ],
   }),
   component: TermsPage,
@@ -28,7 +28,7 @@ function TermsPage() {
         <p className="mt-2 text-muted-foreground">Paid plans renew automatically until cancelled. You can cancel anytime from Settings.</p>
 
         <h2 className="mt-8 text-2xl font-bold">Disclaimer</h2>
-        <p className="mt-2 text-muted-foreground">OkJob is provided "as is". We don't guarantee job offers, response rates, or interview outcomes.</p>
+        <p className="mt-2 text-muted-foreground">OkJobs is provided "as is". We don't guarantee job offers, response rates, or interview outcomes.</p>
 
         <h2 className="mt-8 text-2xl font-bold">Contact</h2>
         <p className="mt-2 text-muted-foreground">Questions? Email legal@zenith.app.</p>

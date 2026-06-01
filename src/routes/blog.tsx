@@ -4,9 +4,9 @@ import { PublicLayout } from "@/components/zenith/PublicLayout";
 export const Route = createFileRoute("/blog")({
   head: () => ({
     meta: [
-      { title: "Blog — OkJob" },
-      { name: "description", content: "Insights on job search, ATS optimization, and AI-powered career tools from the OkJob team." },
-      { property: "og:title", content: "OkJob Blog" },
+      { title: "Blog — OkJobs" },
+      { name: "description", content: "Insights on job search, ATS optimization, and AI-powered career tools from the OkJobs team." },
+      { property: "og:title", content: "OkJobs Blog" },
       { property: "og:description", content: "Career insights, ATS tips, and product updates." },
     ],
   }),

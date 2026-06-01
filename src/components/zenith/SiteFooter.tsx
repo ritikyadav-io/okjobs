@@ -27,8 +27,8 @@ export function SiteFooter() {
       </div>
       <div className="border-t border-border">
         <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-2 px-4 py-5 text-xs text-muted-foreground sm:flex-row">
-          <div>© {new Date().getFullYear()} OkJob. All rights reserved.</div>
-          <div>Reach Your OkJob.</div>
+          <div>© {new Date().getFullYear()} OkJobs. All rights reserved.</div>
+          <div>Reach Your OkJobs.</div>
         </div>
       </div>
     </footer>

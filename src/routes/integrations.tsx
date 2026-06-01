@@ -11,7 +11,7 @@ import { Link } from "@tanstack/react-router";
 import { useRealtimeRefresh } from "@/hooks/use-realtime-refresh";
 
 export const Route = createFileRoute("/integrations")({
-  head: () => ({ meta: [{ title: "Integrations — OkJob" }] }),
+  head: () => ({ meta: [{ title: "Integrations — OkJobs" }] }),
   component: IntegrationsPage,
 });
 

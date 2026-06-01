@@ -8,7 +8,7 @@ import { getLatestBriefing, generateBriefing, sendBriefingEmail } from "@/lib/br
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/briefing")({
-  head: () => ({ meta: [{ title: "Daily Briefing — OkJob" }] }),
+  head: () => ({ meta: [{ title: "Daily Briefing — OkJobs" }] }),
   component: BriefingPage,
 });
 
@@ -52,7 +52,7 @@ function BriefingPage() {
       <div className="overflow-hidden rounded-3xl border-2 border-gold/40 bg-gradient-to-br from-gold/20 via-secondary/10 to-primary/15 p-6 md:p-10">
         <div className="flex items-center gap-3">
           <Sunrise className="h-7 w-7 text-gold" />
-          <span className="text-xs font-extrabold uppercase tracking-widest text-gold">OkJob Daily Edition</span>
+          <span className="text-xs font-extrabold uppercase tracking-widest text-gold">OkJobs Daily Edition</span>
         </div>
         <h2 className="mt-3 text-4xl font-extrabold leading-tight md:text-5xl">Good morning, {d?.name ?? "there"} 🌅</h2>
         <p className="mt-2 max-w-2xl text-sm text-muted-foreground">Everything that moved on your job search overnight.</p>

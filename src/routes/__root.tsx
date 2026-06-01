@@ -62,8 +62,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "OkJob — AI Career Operating System" },
-      { name: "description", content: "Reach Your OkJob. AI-powered job discovery, resume optimization, recruiter monitoring, and interview tracking in one operating system." },
+      { title: "OkJobs — AI Career Operating System" },
+      { name: "description", content: "Reach Your OkJobs. AI-powered job discovery, resume optimization, recruiter monitoring, and interview tracking in one operating system." },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
