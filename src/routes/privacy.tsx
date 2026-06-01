@@ -4,8 +4,8 @@ import { PublicLayout } from "@/components/zenith/PublicLayout";
 export const Route = createFileRoute("/privacy")({
   head: () => ({
     meta: [
-      { title: "Privacy Policy — OkJob" },
-      { name: "description", content: "How OkJob collects, stores, and protects your data." },
+      { title: "Privacy Policy — OkJobs" },
+      { name: "description", content: "How OkJobs collects, stores, and protects your data." },
     ],
   }),
   component: PrivacyPage,

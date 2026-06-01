@@ -10,7 +10,7 @@ import { useRealtimeRefresh } from "@/hooks/use-realtime-refresh";
 import { useState } from "react";
 
 export const Route = createFileRoute("/recruiter-inbox")({
-  head: () => ({ meta: [{ title: "Recruiter Inbox — OkJob" }] }),
+  head: () => ({ meta: [{ title: "Recruiter Inbox — OkJobs" }] }),
   component: InboxPage,
 });
 

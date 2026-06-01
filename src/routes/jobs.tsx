@@ -13,7 +13,7 @@ import { toast } from "sonner";
 import { useRealtimeRefresh } from "@/hooks/use-realtime-refresh";
 
 export const Route = createFileRoute("/jobs")({
-  head: () => ({ meta: [{ title: "Jobs — OkJob" }] }),
+  head: () => ({ meta: [{ title: "Jobs — OkJobs" }] }),
   component: JobsPage,
 });
 

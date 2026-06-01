@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { useRealtimeRefresh } from "@/hooks/use-realtime-refresh";
 
 export const Route = createFileRoute("/calendar")({
-  head: () => ({ meta: [{ title: "Calendar — OkJob" }] }),
+  head: () => ({ meta: [{ title: "Calendar — OkJobs" }] }),
   component: CalendarPage,
 });
 

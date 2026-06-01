@@ -9,7 +9,7 @@ import { toast } from "sonner";
 import { SheetsMappingCard } from "@/components/zenith/SheetsMappingCard";
 
 export const Route = createFileRoute("/settings")({
-  head: () => ({ meta: [{ title: "Settings — OkJob" }, { name: "description", content: "Profile, notifications, connected accounts, plan, and privacy." }] }),
+  head: () => ({ meta: [{ title: "Settings — OkJobs" }, { name: "description", content: "Profile, notifications, connected accounts, plan, and privacy." }] }),
   component: SettingsPage,
 });
 

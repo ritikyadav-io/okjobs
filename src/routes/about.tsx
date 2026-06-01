@@ -4,10 +4,10 @@ import { PublicLayout } from "@/components/zenith/PublicLayout";
 export const Route = createFileRoute("/about")({
   head: () => ({
     meta: [
-      { title: "About — OkJob" },
-      { name: "description", content: "OkJob is the AI Career Operating System. Learn about our mission to help job seekers reach their zenith." },
-      { property: "og:title", content: "About OkJob" },
-      { property: "og:description", content: "The mission, team, and story behind OkJob." },
+      { title: "About — OkJobs" },
+      { name: "description", content: "OkJobs is the AI Career Operating System. Learn about our mission to help job seekers reach their zenith." },
+      { property: "og:title", content: "About OkJobs" },
+      { property: "og:description", content: "The mission, team, and story behind OkJobs." },
     ],
   }),
   component: AboutPage,
@@ -17,9 +17,9 @@ function AboutPage() {
   return (
     <PublicLayout>
       <article className="mx-auto max-w-3xl px-4 py-16">
-        <h1 className="text-4xl font-extrabold tracking-tight md:text-5xl">About OkJob</h1>
+        <h1 className="text-4xl font-extrabold tracking-tight md:text-5xl">About OkJobs</h1>
         <p className="mt-4 text-lg text-muted-foreground">
-          OkJob is the AI Career Operating System. We help ambitious people land roles faster
+          OkJobs is the AI Career Operating System. We help ambitious people land roles faster
           by automating discovery, tailoring resumes, monitoring recruiter conversations, and
           coordinating interviews — all in one place.
         </p>

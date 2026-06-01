@@ -62,14 +62,14 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "OkJob — AI Career Operating System" },
-      { name: "description", content: "Reach Your OkJob. AI-powered job discovery, resume optimization, recruiter monitoring, and interview tracking in one operating system." },
+      { title: "OkJobs — AI Career Operating System" },
+      { name: "description", content: "Reach Your OkJobs. AI-powered job discovery, resume optimization, recruiter monitoring, and interview tracking in one operating system." },
     ],
     links: [
       { rel: "stylesheet", href: appCss },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" },
+      { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700;800;900&display=swap" },
     ],
   }),
   shellComponent: RootShell,
