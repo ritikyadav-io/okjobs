@@ -148,12 +148,12 @@ function Landing() {
               Discover jobs, generate ATS-optimized resumes, track recruiters, automate follow-ups, and manage your entire career — from one place.
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3 md:justify-start">
-              <Link to="/signup" className="inline-flex items-center gap-2 rounded-full bg-gradient-brand px-6 py-3 text-base font-semibold text-white shadow-glow transition-transform hover:scale-[1.02] active:scale-[0.97]">
-                Start Free <ArrowRight className="h-4 w-4" />
+              <Link to={ctaHref} className="inline-flex items-center gap-2 rounded-full bg-gradient-brand px-6 py-3 text-base font-semibold text-white shadow-glow transition-transform hover:scale-[1.02] active:scale-[0.97]">
+                {user ? "Open dashboard" : "Start Free"} <ArrowRight className="h-4 w-4" />
               </Link>
-              <a href="#how" className="rounded-full border-2 border-border px-6 py-3 text-base font-semibold transition-all hover:border-primary/40 hover:bg-accent">
-                Watch Demo ▶
-              </a>
+              <button type="button" onClick={() => setDemoOpen(true)} className="inline-flex items-center gap-2 rounded-full border-2 border-border px-6 py-3 text-base font-semibold transition-all hover:border-primary/40 hover:bg-accent">
+                <Play className="h-4 w-4" /> Watch Demo
+              </button>
             </div>
           </div>
           <div className="relative">
