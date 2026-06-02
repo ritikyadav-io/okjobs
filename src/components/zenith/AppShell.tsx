@@ -57,6 +57,16 @@ export function AppShell({ children }: { children: ReactNode }) {
     if (!loading && !user) nav({ to: "/login" });
   }, [loading, user, nav]);
 
+  // Onboarding gate: require basic profile before using the app
+  const onboardingIncomplete =
+    !!profile &&
+    (!profile.full_name?.trim() || !profile.preferred_role?.trim() || (profile.resume_skills?.length ?? 0) < 3);
+  useEffect(() => {
+    if (!loading && user && onboardingIncomplete && pathname !== "/onboarding") {
+      nav({ to: "/onboarding" });
+    }
+  }, [loading, user, onboardingIncomplete, pathname, nav]);
+
   useEffect(() => {
     if (typeof window !== "undefined") window.scrollTo({ top: 0, behavior: "auto" });
     setDrawerOpen(false);
