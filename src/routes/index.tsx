@@ -407,11 +407,36 @@ function Landing() {
           <h2 className="text-4xl font-extrabold tracking-tight md:text-5xl">
             Your next role is one <span className="text-gradient-brand">OkJobs</span> away
           </h2>
-          <Link to="/signup" className="mt-8 inline-flex items-center gap-2 rounded-full bg-gradient-brand px-7 py-3.5 text-base font-semibold text-white shadow-glow transition-transform hover:scale-[1.02] active:scale-[0.97]">
-            Start Free — It's Free Forever <ArrowRight className="h-4 w-4" />
+          <Link to={ctaHref} className="mt-8 inline-flex items-center gap-2 rounded-full bg-gradient-brand px-7 py-3.5 text-base font-semibold text-white shadow-glow transition-transform hover:scale-[1.02] active:scale-[0.97]">
+            {user ? "Open dashboard" : "Start Free — It's Free Forever"} <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
       </section>
+
+      {demoOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 animate-fade-in" onClick={() => setDemoOpen(false)}>
+          <div className="relative w-full max-w-3xl overflow-hidden rounded-2xl border border-border bg-card shadow-2xl animate-scale-in" onClick={(e) => e.stopPropagation()}>
+            <button onClick={() => setDemoOpen(false)} aria-label="Close demo" className="absolute right-3 top-3 z-10 grid h-9 w-9 place-items-center rounded-full bg-background/80 backdrop-blur hover:bg-accent">
+              <X className="h-4 w-4" />
+            </button>
+            <div className="aspect-video w-full bg-black">
+              <iframe
+                className="h-full w-full"
+                src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&rel=0"
+                title="OkJobs product demo"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+            <div className="flex items-center justify-between gap-3 border-t border-border p-4">
+              <div className="text-sm text-muted-foreground">See OkJobs land interviews in days, not weeks.</div>
+              <Link to={ctaHref} className="rounded-lg bg-gradient-brand px-4 py-2 text-sm font-semibold text-white shadow-glow">
+                {user ? "Open dashboard" : "Start Free"}
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
 
       <SiteFooter />
     </div>
