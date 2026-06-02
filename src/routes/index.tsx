@@ -123,8 +123,8 @@ function Landing() {
           <div className="flex items-center gap-2">
             <ThemeToggle />
             <Link to="/login" className="hidden rounded-lg px-3 py-1.5 text-sm font-semibold hover:bg-accent sm:inline-block">Log in</Link>
-            <Link to="/signup" className="rounded-lg bg-gradient-brand px-4 py-2 text-sm font-semibold text-white shadow-glow transition-transform hover:scale-[1.02] active:scale-[0.97]">
-              Start Free
+            <Link to={ctaHref} className="rounded-lg bg-gradient-brand px-4 py-2 text-sm font-semibold text-white shadow-glow transition-transform hover:scale-[1.02] active:scale-[0.97]">
+              {user ? "Open app" : "Start Free"}
             </Link>
           </div>
         </div>
