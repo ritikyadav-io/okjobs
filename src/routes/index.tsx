@@ -106,7 +106,10 @@ function Landing() {
     if (!loading && user) nav({ to: "/dashboard", replace: true });
   }, [user, loading, nav]);
   const ctaHref = user ? "/dashboard" : "/signup";
+
+  return (
     <div className="min-h-screen bg-background text-foreground">
+
       {/* NAV */}
       <header className="sticky top-0 z-30 border-b border-border bg-background/70 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
