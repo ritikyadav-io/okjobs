@@ -1,13 +1,14 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   Zap, Briefcase, FileText, Inbox, Bell, Calendar, Sunrise, ArrowRight,
   Sparkles, Check, ChevronDown, Search, Mail, Download, ClipboardList,
-  PenLine, Send, Target, BarChart3, Star,
+  PenLine, Send, Target, BarChart3, Star, X, Play,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Logo } from "@/components/zenith/Logo";
 import { ThemeToggle } from "@/components/zenith/ThemeToggle";
 import { SiteFooter } from "@/components/zenith/SiteFooter";
+import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/")({
   head: () => ({
