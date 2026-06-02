@@ -357,12 +357,12 @@ function Landing() {
                 ))}
               </ul>
               <Link
-                to="/signup"
+                to={ctaHref}
                 className={`mt-6 block rounded-lg py-2.5 text-center text-sm font-semibold transition-transform hover:scale-[1.02] active:scale-[0.97] ${
                   p.featured ? "bg-gradient-brand text-white shadow-glow" : "border border-border hover:bg-accent"
                 }`}
               >
-                Get Started
+                {user ? "Open app" : "Get Started"}
               </Link>
             </div>
           ))}
