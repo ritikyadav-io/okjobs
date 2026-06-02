@@ -99,8 +99,13 @@ const TABS = [
 function Landing() {
   const [tab, setTab] = useState(TABS[0].key);
   const [open, setOpen] = useState<number | null>(0);
-
-  return (
+  const [demoOpen, setDemoOpen] = useState(false);
+  const { user, loading } = useAuth();
+  const nav = useNavigate();
+  useEffect(() => {
+    if (!loading && user) nav({ to: "/dashboard", replace: true });
+  }, [user, loading, nav]);
+  const ctaHref = user ? "/dashboard" : "/signup";
     <div className="min-h-screen bg-background text-foreground">
       {/* NAV */}
       <header className="sticky top-0 z-30 border-b border-border bg-background/70 backdrop-blur-xl">
