@@ -1,13 +1,14 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import {
   Zap, Briefcase, FileText, Inbox, Bell, Calendar, Sunrise, ArrowRight,
   Sparkles, Check, ChevronDown, Search, Mail, Download, ClipboardList,
-  PenLine, Send, Target, BarChart3, Star,
+  PenLine, Send, Target, BarChart3, Star, X, Play,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Logo } from "@/components/zenith/Logo";
 import { ThemeToggle } from "@/components/zenith/ThemeToggle";
 import { SiteFooter } from "@/components/zenith/SiteFooter";
+import { useAuth } from "@/hooks/use-auth";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -98,9 +99,17 @@ const TABS = [
 function Landing() {
   const [tab, setTab] = useState(TABS[0].key);
   const [open, setOpen] = useState<number | null>(0);
+  const [demoOpen, setDemoOpen] = useState(false);
+  const { user, loading } = useAuth();
+  const nav = useNavigate();
+  useEffect(() => {
+    if (!loading && user) nav({ to: "/dashboard", replace: true });
+  }, [user, loading, nav]);
+  const ctaHref = user ? "/dashboard" : "/signup";
 
   return (
     <div className="min-h-screen bg-background text-foreground">
+
       {/* NAV */}
       <header className="sticky top-0 z-30 border-b border-border bg-background/70 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4">
@@ -114,8 +123,8 @@ function Landing() {
           <div className="flex items-center gap-2">
             <ThemeToggle />
             <Link to="/login" className="hidden rounded-lg px-3 py-1.5 text-sm font-semibold hover:bg-accent sm:inline-block">Log in</Link>
-            <Link to="/signup" className="rounded-lg bg-gradient-brand px-4 py-2 text-sm font-semibold text-white shadow-glow transition-transform hover:scale-[1.02] active:scale-[0.97]">
-              Start Free
+            <Link to={ctaHref} className="rounded-lg bg-gradient-brand px-4 py-2 text-sm font-semibold text-white shadow-glow transition-transform hover:scale-[1.02] active:scale-[0.97]">
+              {user ? "Open app" : "Start Free"}
             </Link>
           </div>
         </div>
@@ -139,12 +148,12 @@ function Landing() {
               Discover jobs, generate ATS-optimized resumes, track recruiters, automate follow-ups, and manage your entire career — from one place.
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3 md:justify-start">
-              <Link to="/signup" className="inline-flex items-center gap-2 rounded-full bg-gradient-brand px-6 py-3 text-base font-semibold text-white shadow-glow transition-transform hover:scale-[1.02] active:scale-[0.97]">
-                Start Free <ArrowRight className="h-4 w-4" />
+              <Link to={ctaHref} className="inline-flex items-center gap-2 rounded-full bg-gradient-brand px-6 py-3 text-base font-semibold text-white shadow-glow transition-transform hover:scale-[1.02] active:scale-[0.97]">
+                {user ? "Open dashboard" : "Start Free"} <ArrowRight className="h-4 w-4" />
               </Link>
-              <a href="#how" className="rounded-full border-2 border-border px-6 py-3 text-base font-semibold transition-all hover:border-primary/40 hover:bg-accent">
-                Watch Demo ▶
-              </a>
+              <button type="button" onClick={() => setDemoOpen(true)} className="inline-flex items-center gap-2 rounded-full border-2 border-border px-6 py-3 text-base font-semibold transition-all hover:border-primary/40 hover:bg-accent">
+                <Play className="h-4 w-4" /> Watch Demo
+              </button>
             </div>
           </div>
           <div className="relative">
@@ -348,12 +357,12 @@ function Landing() {
                 ))}
               </ul>
               <Link
-                to="/signup"
+                to={ctaHref}
                 className={`mt-6 block rounded-lg py-2.5 text-center text-sm font-semibold transition-transform hover:scale-[1.02] active:scale-[0.97] ${
                   p.featured ? "bg-gradient-brand text-white shadow-glow" : "border border-border hover:bg-accent"
                 }`}
               >
-                Get Started
+                {user ? "Open app" : "Get Started"}
               </Link>
             </div>
           ))}
@@ -398,11 +407,36 @@ function Landing() {
           <h2 className="text-4xl font-extrabold tracking-tight md:text-5xl">
             Your next role is one <span className="text-gradient-brand">OkJobs</span> away
           </h2>
-          <Link to="/signup" className="mt-8 inline-flex items-center gap-2 rounded-full bg-gradient-brand px-7 py-3.5 text-base font-semibold text-white shadow-glow transition-transform hover:scale-[1.02] active:scale-[0.97]">
-            Start Free — It's Free Forever <ArrowRight className="h-4 w-4" />
+          <Link to={ctaHref} className="mt-8 inline-flex items-center gap-2 rounded-full bg-gradient-brand px-7 py-3.5 text-base font-semibold text-white shadow-glow transition-transform hover:scale-[1.02] active:scale-[0.97]">
+            {user ? "Open dashboard" : "Start Free — It's Free Forever"} <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
       </section>
+
+      {demoOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 animate-fade-in" onClick={() => setDemoOpen(false)}>
+          <div className="relative w-full max-w-3xl overflow-hidden rounded-2xl border border-border bg-card shadow-2xl animate-scale-in" onClick={(e) => e.stopPropagation()}>
+            <button onClick={() => setDemoOpen(false)} aria-label="Close demo" className="absolute right-3 top-3 z-10 grid h-9 w-9 place-items-center rounded-full bg-background/80 backdrop-blur hover:bg-accent">
+              <X className="h-4 w-4" />
+            </button>
+            <div className="aspect-video w-full bg-black">
+              <iframe
+                className="h-full w-full"
+                src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&rel=0"
+                title="OkJobs product demo"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+            <div className="flex items-center justify-between gap-3 border-t border-border p-4">
+              <div className="text-sm text-muted-foreground">See OkJobs land interviews in days, not weeks.</div>
+              <Link to={ctaHref} className="rounded-lg bg-gradient-brand px-4 py-2 text-sm font-semibold text-white shadow-glow">
+                {user ? "Open dashboard" : "Start Free"}
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
 
       <SiteFooter />
     </div>
