@@ -77,7 +77,7 @@ function SettingsPage() {
             <div className="sm:col-span-2"><button onClick={save} disabled={saving} className="rounded-lg bg-gradient-brand px-4 py-2 text-sm font-semibold text-white shadow-glow disabled:opacity-60">{saving ? "Saving…" : "Save changes"}</button></div>
           </div>}
           {tab === "notifications" && <div className="space-y-4"><Toggle label="Daily briefing email" desc="Sent every day at 8 AM" defaultOn /><Toggle label="Recruiter reply alerts" desc="Live when Gmail detects recruiter email" defaultOn /><Toggle label="Follow-up reminders" desc="Google Calendar reminders for due follow-ups" defaultOn /></div>}
-          {tab === "accounts" && <div className="grid gap-3 sm:grid-cols-2">{["Gmail", "Google Calendar", "Google Docs", "Google Sheets", "Resend", "Firecrawl"].map((name) => <div key={name} className="flex items-center justify-between rounded-xl border border-border bg-background p-4"><div><div className="font-semibold">{name}</div><div className="text-xs font-bold text-success">Connected</div></div><span className="rounded-lg border border-border px-3 py-1.5 text-xs font-bold">Managed</span></div>)}</div>}
+          {tab === "accounts" && <ConnectedAccounts />}
           {tab === "sheets" && <SheetsMappingCard />}
           {tab === "plan" && <div className="rounded-2xl border-2 border-border bg-background p-5"><div className="text-xs font-bold uppercase text-muted-foreground">Current plan</div><div className="mt-1 text-3xl font-extrabold">{profile?.plan ?? "Free"}</div><div className="mt-4 inline-flex items-center gap-1 rounded-lg border border-border px-3 py-2 text-sm font-semibold"><Check className="h-4 w-4" /> Active</div></div>}
           {tab === "privacy" && <div className="space-y-3"><button className="rounded-lg border border-border px-4 py-2 text-sm font-semibold hover:bg-accent">Change password</button><button className="block rounded-lg border border-border px-4 py-2 text-sm font-semibold hover:bg-accent">Export all data</button></div>}
@@ -93,4 +93,42 @@ function Field({ label, ...rest }: { label: string } & React.InputHTMLAttributes
 function Toggle({ label, desc, defaultOn = false }: { label: string; desc: string; defaultOn?: boolean }) {
   const [on, setOn] = useState(defaultOn);
   return <div className="flex items-center justify-between rounded-xl border border-border bg-background p-4"><div><div className="font-semibold">{label}</div><div className="text-xs text-muted-foreground">{desc}</div></div><button onClick={() => setOn(!on)} className={`h-6 w-11 rounded-full transition-colors ${on ? "bg-gradient-brand" : "bg-muted"}`}><span className={`block h-5 w-5 translate-y-0.5 rounded-full bg-white transition-transform ${on ? "translate-x-[22px]" : "translate-x-0.5"}`} /></button></div>;
+}
+
+const ACCOUNTS = [
+  { key: "gmail", name: "Gmail", desc: "Surface interview invites, offers, and recruiter replies in your Career Inbox." },
+  { key: "drive", name: "Google Drive", desc: "Save AI-generated resumes and cover letters straight into your Drive." },
+  { key: "calendar", name: "Google Calendar", desc: "Auto-create interview events and follow-up reminders." },
+  { key: "docs", name: "Google Docs", desc: "Open generated resumes in Docs for quick edits." },
+] as const;
+
+function ConnectedAccounts() {
+  return (
+    <div className="space-y-4">
+      <div className="rounded-xl border border-dashed border-border bg-background p-4 text-xs text-muted-foreground">
+        Each account below is scoped to <span className="font-semibold text-foreground">your</span> profile. We never read another user's mailbox, Drive, or calendar.
+      </div>
+      <div className="grid gap-3 sm:grid-cols-2">
+        {ACCOUNTS.map((a) => (
+          <div key={a.key} className="flex flex-col gap-3 rounded-xl border border-border bg-background p-4">
+            <div>
+              <div className="text-sm font-bold">{a.name}</div>
+              <div className="mt-0.5 text-xs text-muted-foreground">{a.desc}</div>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                Not connected
+              </span>
+              <button
+                onClick={() => toast.info(`${a.name} per-user connect is rolling out soon.`)}
+                className="rounded-lg bg-gradient-brand px-3 py-1.5 text-xs font-bold text-white shadow-glow"
+              >
+                Connect {a.name}
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }

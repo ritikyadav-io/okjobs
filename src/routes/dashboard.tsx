@@ -64,7 +64,7 @@ function Dashboard() {
             <h3 className="text-lg font-bold">Matched today</h3>
             <Link to="/jobs" className="text-xs font-semibold text-primary">See all →</Link>
           </div>
-          {jobs.isError ? <Empty title="Jobs could not load" hint="Please refresh or reconnect Firecrawl." /> : jobs.isLoading ? <Skel n={3} /> : (jobs.data?.jobs.length ?? 0) === 0 ? (
+          {jobs.isError ? <Empty title="Jobs could not load" hint="Please refresh and try again." /> : jobs.isLoading ? <Skel n={3} /> : (jobs.data?.jobs.length ?? 0) === 0 ? (
             <Empty title="👋 Welcome to OkJobs!" hint="Start by browsing jobs and submitting your first application!" />
           ) : (
             <div className="space-y-3">
@@ -103,11 +103,11 @@ function Dashboard() {
       <div className="mt-6 grid gap-5 lg:grid-cols-3">
         <div className="rounded-2xl border-2 border-border bg-card p-5 lg:col-span-2">
           <div className="mb-4 flex items-center justify-between">
-            <h3 className="text-lg font-bold">Recruiter inbox</h3>
-            <Link to="/recruiter-inbox" className="text-xs font-semibold text-primary">Open inbox →</Link>
+            <h3 className="text-lg font-bold">Recent career activity</h3>
+            <Link to="/recruiter-inbox" className="text-xs font-semibold text-primary">Open Career Inbox →</Link>
           </div>
           {emails.isError ? <Empty title="Inbox could not load" hint="Please refresh or reconnect Gmail." /> : emails.isLoading ? <Skel n={3} /> : (emails.data?.emails.length ?? 0) === 0 ? (
-            <Empty title="📧 No recruiter emails yet" hint="Connect Gmail from the Recruiter Inbox page to monitor recruiter replies." />
+            <Empty title="📧 No career updates yet" hint="Connect Gmail in Settings → Connected Accounts to surface interview invites, offers, and recruiter replies." />
           ) : (
             <div className="space-y-3">
               {emails.data!.emails.slice(0, 3).map((e: any) => (

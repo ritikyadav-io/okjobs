@@ -65,7 +65,7 @@ const SHOWCASE = [
   { title: "Command Dashboard", desc: "Pipeline, ATS scores, replies and upcoming follow-ups in a single glance.", tag: "Dashboard" },
   { title: "Job Discovery", desc: "AI-ranked job feed with fit scores, salary signals and one-click apply.", tag: "Jobs" },
   { title: "Resume Lab", desc: "Tailored ATS resume per role with live keyword diff and score prediction.", tag: "Resume Lab" },
-  { title: "Recruiter Inbox", desc: "Gmail-powered inbox that surfaces only recruiter replies and offers.", tag: "Inbox" },
+  { title: "Career Inbox", desc: "AI-classified inbox that surfaces interview invites, offers and recruiter replies.", tag: "Inbox" },
   { title: "Interview Calendar", desc: "Auto-scheduled prep blocks, reminders and post-interview notes.", tag: "Calendar" },
   { title: "Application Tracker", desc: "Kanban view across applied, screen, onsite, offer and rejected.", tag: "Tracker" },
 ];
@@ -74,7 +74,7 @@ const FEATURES = [
   { icon: Search, title: "AI Job Discovery", desc: "Auto-scan 50+ job boards every few hours." },
   { icon: Target, title: "ATS Resume Builder", desc: "Per-role keyword rewrites with live score." },
   { icon: Sparkles, title: "Resume Optimization", desc: "Diffed suggestions you can accept in one click." },
-  { icon: Inbox, title: "Recruiter Inbox", desc: "Gmail auto-classifies recruiter replies." },
+  { icon: Inbox, title: "Career Inbox", desc: "AI classifies offers, interviews and recruiter replies." },
   { icon: ClipboardList, title: "Application Tracker", desc: "Kanban from applied to offer." },
   { icon: Calendar, title: "Interview Calendar", desc: "Auto-events with prep checklists." },
   { icon: Bell, title: "Follow-Up Automation", desc: "Personalized day-5 nudges sent for you." },
@@ -89,7 +89,7 @@ const TESTIMONIALS = [
   { name: "Priya Sharma", role: "SDE II", company: "Amazon", result: "4 interviews in 14 days", quote: "OkJobs rewrote my resume per role and my callbacks tripled within two weeks." },
   { name: "Marcus Lee", role: "Product Manager", company: "Stripe", result: "ATS score 45 → 91", quote: "The ATS lab made the difference. I finally stopped getting auto-rejected." },
   { name: "Ananya Iyer", role: "Data Scientist", company: "Databricks", result: "8 hours saved weekly", quote: "I stopped living in tabs. Everything is in one inbox now." },
-  { name: "Daniel Okonkwo", role: "Frontend Engineer", company: "Adobe", result: "Offer in 5 weeks", quote: "The recruiter inbox surfaced a reply I would have completely missed." },
+  { name: "Daniel Okonkwo", role: "Frontend Engineer", company: "Adobe", result: "Offer in 5 weeks", quote: "The Career Inbox surfaced a reply I would have completely missed." },
   { name: "Sofia Alvarez", role: "Designer", company: "Atlassian", result: "12 quality applies/week", quote: "Quality over quantity. I only apply to roles with 80%+ fit now." },
   { name: "Ravi Krishnan", role: "Backend Engineer", company: "Uber", result: "3 onsites in a month", quote: "Follow-up automation alone is worth it. Two onsites came from day-5 nudges." },
   { name: "Emily Chen", role: "PM Intern", company: "Microsoft", result: "First-week interviews", quote: "As a new grad this felt like having a career coach on standby 24/7." },
@@ -493,7 +493,7 @@ function Landing() {
           <div className="mt-12 grid gap-6 md:grid-cols-3">
             {[
               { name: "Free", price: "$0", tag: "Forever", feats: ["10 AI resumes/mo","Basic job discovery","Application tracker","Email support"], cta: ctaLabel },
-              { name: "Pro", price: "$19", tag: "/month", feats: ["Unlimited AI resumes","Gmail recruiter inbox","Follow-up automation","Daily briefings","Priority support"], cta: "Start Pro", featured: true },
+              { name: "Pro", price: "$19", tag: "/month", feats: ["Unlimited AI resumes","Career Inbox","Follow-up automation","Daily briefings","Priority support"], cta: "Start Pro", featured: true },
               { name: "Career+", price: "$49", tag: "/month", feats: ["Everything in Pro","1:1 resume reviews","Mock interview AI","Salary negotiation coach","Concierge onboarding"], cta: "Go Career+" },
             ].map(p => (
               <div key={p.name} className={`relative rounded-2xl border bg-card p-7 ${p.featured ? "border-primary shadow-glow" : "border-border"}`}>
@@ -698,7 +698,7 @@ function FakeScreenshot({ label, variant }: { label: string; variant: number }) 
 
 function PremiumFooter() {
   const cols = [
-    { title: "Product", links: [["Jobs","/jobs"],["Applications","/applications"],["Resume Builder","/resume-lab"],["Recruiter Inbox","/recruiter-inbox"],["Calendar","/calendar"]] },
+    { title: "Product", links: [["Jobs","/jobs"],["Applications","/applications"],["Resume Builder","/resume-lab"],["Career Inbox","/recruiter-inbox"],["Calendar","/calendar"]] },
     { title: "Resources", links: [["Blog","/blog"],["ATS Guides","/blog"],["Career Guides","/blog"],["Interview Tips","/blog"],["Salary Guides","/blog"]] },
     { title: "Company", links: [["About","/about"],["Founder","/about"],["Contact","/about"],["Careers","/about"]] },
     { title: "Legal", links: [["Privacy","/privacy"],["Terms","/terms"],["Cookies","/privacy"],["Security","/privacy"]] },
