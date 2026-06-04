@@ -493,7 +493,7 @@ function Landing() {
           <div className="mt-12 grid gap-6 md:grid-cols-3">
             {[
               { name: "Free", price: "$0", tag: "Forever", feats: ["10 AI resumes/mo","Basic job discovery","Application tracker","Email support"], cta: ctaLabel },
-              { name: "Pro", price: "$19", tag: "/month", feats: ["Unlimited AI resumes","Gmail recruiter inbox","Follow-up automation","Daily briefings","Priority support"], cta: "Start Pro", featured: true },
+              { name: "Pro", price: "$19", tag: "/month", feats: ["Unlimited AI resumes","Career Inbox","Follow-up automation","Daily briefings","Priority support"], cta: "Start Pro", featured: true },
               { name: "Career+", price: "$49", tag: "/month", feats: ["Everything in Pro","1:1 resume reviews","Mock interview AI","Salary negotiation coach","Concierge onboarding"], cta: "Go Career+" },
             ].map(p => (
               <div key={p.name} className={`relative rounded-2xl border bg-card p-7 ${p.featured ? "border-primary shadow-glow" : "border-border"}`}>
@@ -698,7 +698,7 @@ function FakeScreenshot({ label, variant }: { label: string; variant: number }) 
 
 function PremiumFooter() {
   const cols = [
-    { title: "Product", links: [["Jobs","/jobs"],["Applications","/applications"],["Resume Builder","/resume-lab"],["Recruiter Inbox","/recruiter-inbox"],["Calendar","/calendar"]] },
+    { title: "Product", links: [["Jobs","/jobs"],["Applications","/applications"],["Resume Builder","/resume-lab"],["Career Inbox","/recruiter-inbox"],["Calendar","/calendar"]] },
     { title: "Resources", links: [["Blog","/blog"],["ATS Guides","/blog"],["Career Guides","/blog"],["Interview Tips","/blog"],["Salary Guides","/blog"]] },
     { title: "Company", links: [["About","/about"],["Founder","/about"],["Contact","/about"],["Careers","/about"]] },
     { title: "Legal", links: [["Privacy","/privacy"],["Terms","/terms"],["Cookies","/privacy"],["Security","/privacy"]] },
