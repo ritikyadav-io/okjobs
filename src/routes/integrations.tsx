@@ -26,7 +26,7 @@ type ConnectorRow = {
 
 const ROWS: ConnectorRow[] = [
   { key: "supabase", label: "Database", description: "User data, jobs, applications, realtime", verifyName: "supabase", matchConnectors: ["supabase"] },
-  { key: "firecrawl", label: "Firecrawl — Job Scraping", description: "LinkedIn, Indeed, Naukri, Internshala + 1000s of company pages", verifyName: "firecrawl", runName: "scrape_jobs", matchConnectors: ["firecrawl"] },
+  { key: "firecrawl", label: "Job Discovery Engine", description: "Aggregates LinkedIn, Indeed, Naukri, Internshala and 1000s of company pages.", verifyName: "firecrawl", runName: "scrape_jobs", matchConnectors: ["firecrawl"] },
   { key: "gmail", label: "Gmail Sync", description: "Auto-classify recruiter emails every 15 min", verifyName: "gmail", runName: "gmail", matchConnectors: ["gmail"] },
   { key: "calendar", label: "Google Calendar", description: "Interview events + follow-up reminders", verifyName: "calendar", runName: "calendar", matchConnectors: ["calendar"] },
   { key: "docs", label: "Google Docs Export", description: "Resume & cover letter export", verifyName: "docs", matchConnectors: ["docs"] },

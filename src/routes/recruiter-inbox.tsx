@@ -10,7 +10,7 @@ import { useRealtimeRefresh } from "@/hooks/use-realtime-refresh";
 import { useState } from "react";
 
 export const Route = createFileRoute("/recruiter-inbox")({
-  head: () => ({ meta: [{ title: "Recruiter Inbox — OkJobs" }] }),
+  head: () => ({ meta: [{ title: "Career Inbox — OkJobs" }] }),
   component: InboxPage,
 });
 
@@ -73,24 +73,24 @@ function InboxPage() {
   return (
     <AppShell>
       <PageHeader
-        title="Recruiter Inbox"
-        description="Gmail-synced and auto-classified."
+        title="Career Inbox"
+        description="Interview invites, offers, assessments and recruiter messages — auto-classified from your inbox."
         actions={
           <button onClick={() => sync.mutate()} disabled={sync.isPending} className="inline-flex items-center gap-2 rounded-lg bg-gradient-brand px-4 py-2 text-sm font-semibold text-white shadow-glow disabled:opacity-60">
-            <RefreshCw className={`h-4 w-4 ${sync.isPending ? "animate-spin" : ""}`} /> {sync.isPending ? "Syncing…" : "Sync Gmail"}
+            <RefreshCw className={`h-4 w-4 ${sync.isPending ? "animate-spin" : ""}`} /> {sync.isPending ? "Syncing…" : "Sync inbox"}
           </button>
         }
       />
 
       {emails.isError ? (
-        <div className="rounded-2xl border-2 border-dashed border-border bg-card p-12 text-center"><div className="text-lg font-bold">Recruiter inbox could not load</div><p className="mt-1 text-sm text-muted-foreground">Reconnect Gmail or try syncing again.</p></div>
+        <div className="rounded-2xl border-2 border-dashed border-border bg-card p-12 text-center"><div className="text-lg font-bold">Career inbox could not load</div><p className="mt-1 text-sm text-muted-foreground">Reconnect Gmail in Settings or try syncing again.</p></div>
       ) : emails.isLoading ? (
         <div className="space-y-3">{Array.from({ length: 4 }).map((_, i) => <div key={i} className="h-32 animate-pulse rounded-2xl bg-muted/40" />)}</div>
       ) : items.length === 0 ? (
         <div className="rounded-2xl border-2 border-dashed border-border bg-card p-12 text-center">
-          <div className="text-lg font-bold">📧 No recruiter emails yet</div>
-          <p className="mt-1 text-sm text-muted-foreground">Connect your Gmail account to automatically monitor recruiter replies and interview invites.</p>
-          <button onClick={() => sync.mutate()} className="mt-4 rounded-lg bg-gradient-brand px-4 py-2 text-sm font-semibold text-white shadow-glow">Connect Gmail / Sync now</button>
+          <div className="text-lg font-bold">📧 No career updates yet</div>
+          <p className="mt-1 text-sm text-muted-foreground">Connect Gmail in Settings → Connected Accounts to surface interview invites, offers and recruiter replies.</p>
+          <button onClick={() => sync.mutate()} className="mt-4 rounded-lg bg-gradient-brand px-4 py-2 text-sm font-semibold text-white shadow-glow">Sync inbox now</button>
         </div>
       ) : (
         <div className="grid gap-4">
