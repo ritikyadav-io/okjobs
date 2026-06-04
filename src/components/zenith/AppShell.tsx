@@ -31,7 +31,7 @@ const NAV: NavItem[] = [
   { to: "/jobs", label: "Jobs", icon: Briefcase, color: "text-cyan" },
   { to: "/applications", label: "Applications", icon: ClipboardList, color: "text-secondary" },
   { to: "/resume-lab", label: "Resume Lab", icon: FileText, color: "text-gold" },
-  { to: "/recruiter-inbox", label: "Recruiter Inbox", icon: Inbox, color: "text-success" },
+  { to: "/recruiter-inbox", label: "Career Inbox", icon: Inbox, color: "text-success" },
   { to: "/calendar", label: "Calendar", icon: Calendar, color: "text-cyan" },
   { to: "/briefing", label: "Daily Briefing", icon: Sunrise, color: "text-gold" },
   { to: "/integrations", label: "Assistants", icon: Plug, color: "text-primary" },

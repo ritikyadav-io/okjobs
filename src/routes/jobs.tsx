@@ -35,8 +35,8 @@ function JobsPage() {
 
   const scrape = useMutation({
     mutationFn: (q: string) => enqueueFn({ data: { task: "scrape_jobs", payload: { query: q, limit: 80 } } }),
-    onSuccess: () => toast.success("Scrape queued — new jobs will appear here live."),
-    onError: (e: any) => toast.error(e.message ?? "Failed to queue scrape"),
+    onSuccess: () => toast.success("Searching jobs — new matches will appear here live."),
+    onError: (e: any) => toast.error(e.message ?? "Couldn't start search"),
   });
   const save = useMutation({
     mutationFn: (id: string) => saveFn({ data: { jobId: id } }),
@@ -65,7 +65,7 @@ function JobsPage() {
             disabled={scrape.isPending}
             className="inline-flex items-center gap-2 rounded-lg bg-gradient-brand px-4 py-2 text-sm font-semibold text-white shadow-glow disabled:opacity-60"
           >
-            <RefreshCw className={`h-4 w-4 ${scrape.isPending ? "animate-spin" : ""}`} /> {scrape.isPending ? "Queuing…" : "Scrape jobs"}
+            <RefreshCw className={`h-4 w-4 ${scrape.isPending ? "animate-spin" : ""}`} /> {scrape.isPending ? "Searching…" : "Find Jobs"}
           </button>
         }
       />
@@ -92,14 +92,14 @@ function JobsPage() {
       </div>
 
       {jobs.isError ? (
-        <div className="rounded-2xl border-2 border-dashed border-border bg-card p-12 text-center"><div className="text-lg font-bold">Jobs could not load</div><p className="mt-1 text-sm text-muted-foreground">Reconnect Firecrawl or try again.</p></div>
+        <div className="rounded-2xl border-2 border-dashed border-border bg-card p-12 text-center"><div className="text-lg font-bold">Jobs could not load</div><p className="mt-1 text-sm text-muted-foreground">Please try again.</p></div>
       ) : jobs.isLoading ? (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">{Array.from({ length: 6 }).map((_, i) => <div key={i} className="h-56 animate-pulse rounded-2xl bg-muted/40" />)}</div>
       ) : items.length === 0 ? (
         <div className="rounded-2xl border-2 border-dashed border-border bg-card p-12 text-center">
           <div className="text-lg font-bold">🔍 No jobs loaded yet</div>
-          <p className="mt-1 text-sm text-muted-foreground">Connect Firecrawl to automatically discover real jobs matching your profile every 6 hours.</p>
-          <button onClick={() => scrape.mutate(query || "software engineer remote")} className="mt-4 rounded-lg bg-gradient-brand px-4 py-2 text-sm font-semibold text-white shadow-glow">Connect Firecrawl / Refresh</button>
+          <p className="mt-1 text-sm text-muted-foreground">Tap below to start discovering roles that match your profile.</p>
+          <button onClick={() => scrape.mutate(query || "software engineer remote")} className="mt-4 rounded-lg bg-gradient-brand px-4 py-2 text-sm font-semibold text-white shadow-glow">Find Jobs</button>
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
