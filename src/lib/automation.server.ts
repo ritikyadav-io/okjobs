@@ -1,10 +1,20 @@
 import { supabaseAdmin } from "@/integrations/supabase/client.server";
+import { callUserGoogle, getUserGoogleConnection, GoogleNotConnectedError, listUsersWithGoogleConnection } from "@/lib/userGoogle.server";
 
 const AI_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
-const GMAIL_GW = "https://connector-gateway.lovable.dev/google_mail/gmail/v1";
-const CAL_GW = "https://connector-gateway.lovable.dev/google_calendar/calendar/v3";
-const DOCS_GW = "https://connector-gateway.lovable.dev/google_docs/v1";
 const RESEND_GW = "https://connector-gateway.lovable.dev/resend";
+
+// Per-user Google API helpers — all calls use the user's own connection.
+async function userGmail(userId: string, path: string, init?: RequestInit) {
+  return callUserGoogle({ userId, connectorId: "google_mail", path: `/gmail/v1${path}`, init });
+}
+async function userCalendar(userId: string, path: string, init?: RequestInit) {
+  return callUserGoogle({ userId, connectorId: "google_calendar", path: `/calendar/v3${path}`, init });
+}
+async function userDocs(userId: string, path: string, init?: RequestInit) {
+  return callUserGoogle({ userId, connectorId: "google_docs", path: `/v1${path}`, init });
+}
+
 
 const RECRUITER_QUERY = 'newer_than:30d (interview OR application OR offer OR rejected OR "next steps" OR schedule OR assessment OR OA OR recruiter OR hiring OR talent OR careers)';
 const JOB_SITE_GROUPS = [
@@ -146,10 +156,9 @@ function eventEnd(start: Date, minutes = 45) {
   return new Date(start.getTime() + minutes * 60 * 1000);
 }
 
-async function createGoogleCalendarEvent(input: { title: string; startsAt: Date; endsAt?: Date; description?: string }) {
-  const res = await fetch(`${CAL_GW}/calendars/primary/events`, {
+async function createGoogleCalendarEvent(userId: string, input: { title: string; startsAt: Date; endsAt?: Date; description?: string }) {
+  const res = await userCalendar(userId, `/calendars/primary/events`, {
     method: "POST",
-    headers: gatewayHeaders("GOOGLE_CALENDAR_API_KEY"),
     body: JSON.stringify({
       summary: input.title,
       description: input.description,
@@ -161,10 +170,9 @@ async function createGoogleCalendarEvent(input: { title: string; startsAt: Date;
   return res.json();
 }
 
-async function markGmailRead(messageId: string) {
-  const res = await fetch(`${GMAIL_GW}/users/me/messages/${messageId}/modify`, {
+async function markGmailRead(userId: string, messageId: string) {
+  const res = await userGmail(userId, `/users/me/messages/${messageId}/modify`, {
     method: "POST",
-    headers: gatewayHeaders("GOOGLE_MAIL_API_KEY"),
     body: JSON.stringify({ removeLabelIds: ["UNREAD"] }),
   });
   if (!res.ok && res.status !== 403) throw new Error(`Gmail mark-read failed [${res.status}]: ${(await res.text()).slice(0, 300)}`);
@@ -216,10 +224,10 @@ async function maybeCreateInterviewEvent(db: Db, userId: string, email: any) {
 
   let googleEventId: string | null = null;
   try {
-    const event = await createGoogleCalendarEvent({ title, startsAt: start, description: `Created from recruiter email: ${email.subject}` });
+    const event = await createGoogleCalendarEvent(userId, { title, startsAt: start, description: `Created from recruiter email: ${email.subject}` });
     googleEventId = event.id ?? null;
   } catch (error) {
-    console.warn("Calendar event creation skipped", error);
+    if (!(error instanceof GoogleNotConnectedError)) console.warn("Calendar event creation skipped", error);
   }
 
   await db.from("calendar_events").insert({
@@ -231,26 +239,17 @@ async function maybeCreateInterviewEvent(db: Db, userId: string, email: any) {
   });
 }
 
-export async function getConnectedGmailEmail(): Promise<string | null> {
-  try {
-    const res = await fetch(`${GMAIL_GW}/users/me/profile`, { headers: gatewayHeaders("GOOGLE_MAIL_API_KEY") });
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.emailAddress?.toLowerCase() ?? null;
-  } catch {
-    return null;
-  }
-}
-
 export async function syncRecruiterEmailsForUser(db: Db, userId: string) {
-  const headers = gatewayHeaders("GOOGLE_MAIL_API_KEY");
-  // Paginate the broader 60-day window so we can reconcile deletes accurately.
+  // Per-user Gmail sync — uses the user's own connection. Throws GoogleNotConnectedError if missing.
+  const conn = await getUserGoogleConnection(userId);
+  if (!conn) throw new GoogleNotConnectedError(userId);
+
   const presentIds = new Set<string>();
   let pageToken: string | undefined;
   let pages = 0;
   do {
-    const url = `${GMAIL_GW}/users/me/messages?maxResults=100&q=${encodeURIComponent(RECRUITER_QUERY)}${pageToken ? `&pageToken=${pageToken}` : ""}`;
-    const listRes = await fetch(url, { headers });
+    const url = `/users/me/messages?maxResults=100&q=${encodeURIComponent(RECRUITER_QUERY)}${pageToken ? `&pageToken=${pageToken}` : ""}`;
+    const listRes = await userGmail(userId, url);
     if (!listRes.ok) throw new Error(`Gmail list failed [${listRes.status}]: ${(await listRes.text()).slice(0, 300)}`);
     const list = await listRes.json();
     for (const m of list.messages ?? []) if (m?.id) presentIds.add(m.id);
@@ -266,7 +265,7 @@ export async function syncRecruiterEmailsForUser(db: Db, userId: string) {
     const { data: existing } = await db.from("recruiter_emails").select("id").eq("user_id", userId).eq("gmail_message_id", id).maybeSingle();
     if (existing) continue;
 
-    const msgRes = await fetch(`${GMAIL_GW}/users/me/messages/${id}?format=full`, { headers });
+    const msgRes = await userGmail(userId, `/users/me/messages/${id}?format=full`);
     if (!msgRes.ok) continue;
     const msg = await msgRes.json();
     const hdrs: Record<string, string> = {};
@@ -299,10 +298,9 @@ export async function syncRecruiterEmailsForUser(db: Db, userId: string) {
     added++;
     await updateApplicationFromEmail(db, userId, saved);
     await maybeCreateInterviewEvent(db, userId, saved);
-    try { await markGmailRead(id); } catch (error) { console.warn("Gmail read update skipped", error); }
+    try { await markGmailRead(userId, id); } catch (error) { console.warn("Gmail read update skipped", error); }
   }
 
-  // Reconcile deletes: any local row whose gmail_message_id isn't in the current Gmail list is gone.
   let removed = 0;
   const { data: locals } = await db
     .from("recruiter_emails")
@@ -319,15 +317,19 @@ export async function syncRecruiterEmailsForUser(db: Db, userId: string) {
   return { scanned: ids.length, classified, added, removed };
 }
 
-
-export async function syncRecruiterEmailsForConnectedProfile() {
-  const email = await getConnectedGmailEmail();
-  if (!email) return { users: 0, scanned: 0, added: 0 };
-  const { data: profile } = await supabaseAdmin.from("profiles").select("id").ilike("email", email).maybeSingle();
-  if (!profile?.id) return { users: 0, scanned: 0, added: 0 };
-  const result = await syncRecruiterEmailsForUser(supabaseAdmin, profile.id);
-  await scheduleFollowupRemindersForUser(supabaseAdmin, profile.id);
-  return { users: 1, ...result };
+export async function syncRecruiterEmailsForAllConnectedUsers() {
+  const users = await listUsersWithGoogleConnection();
+  let totalAdded = 0;
+  for (const u of users) {
+    try {
+      const r = await syncRecruiterEmailsForUser(supabaseAdmin, u.userId);
+      await scheduleFollowupRemindersForUser(supabaseAdmin, u.userId);
+      totalAdded += r.added;
+    } catch (e) {
+      if (!(e instanceof GoogleNotConnectedError)) console.warn("[gmail-sync] user failed", u.userId, e);
+    }
+  }
+  return { users: users.length, added: totalAdded };
 }
 
 export async function syncCalendarForUser(db: Db, userId: string) {
