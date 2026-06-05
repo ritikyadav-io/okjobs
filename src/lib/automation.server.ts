@@ -334,9 +334,7 @@ export async function syncRecruiterEmailsForAllConnectedUsers() {
 
 export async function syncCalendarForUser(db: Db, userId: string) {
   const timeMin = new Date().toISOString();
-  const res = await fetch(`${CAL_GW}/calendars/primary/events?timeMin=${encodeURIComponent(timeMin)}&maxResults=100&singleEvents=true&orderBy=startTime`, {
-    headers: gatewayHeaders("GOOGLE_CALENDAR_API_KEY"),
-  });
+  const res = await userCalendar(userId, `/calendars/primary/events?timeMin=${encodeURIComponent(timeMin)}&maxResults=100&singleEvents=true&orderBy=startTime`);
   if (!res.ok) throw new Error(`Calendar fetch failed [${res.status}]: ${(await res.text()).slice(0, 300)}`);
   const json = await res.json();
   const items = json.items ?? [];
@@ -521,10 +519,10 @@ export async function scheduleFollowupRemindersForUser(db: Db, userId: string) {
     await db.from("applications").update({ followup_date: base.toISOString().slice(0, 10) }).eq("id", app.id).eq("user_id", userId);
     if (existing) continue;
     try {
-      await createGoogleCalendarEvent({ title, startsAt: base, endsAt: eventEnd(base, 20), description: "OkJobs follow-up reminder" });
+      await createGoogleCalendarEvent(userId, { title, startsAt: base, endsAt: eventEnd(base, 20), description: "OkJobs follow-up reminder" });
       scheduled++;
     } catch (error) {
-      console.warn("Follow-up Google Calendar reminder skipped", error);
+      if (!(error instanceof GoogleNotConnectedError)) console.warn("Follow-up Google Calendar reminder skipped", error);
     }
   }
   return { scheduled };
@@ -619,15 +617,13 @@ export async function sendDailyBriefingsForAllProfiles() {
   return { users: profiles?.length ?? 0, sent, errors };
 }
 
-export async function createGoogleDoc(title: string, body: string) {
-  const headers = gatewayHeaders("GOOGLE_DOCS_API_KEY");
-  const createRes = await fetch(`${DOCS_GW}/documents`, { method: "POST", headers, body: JSON.stringify({ title }) });
+export async function createGoogleDoc(userId: string, title: string, body: string) {
+  const createRes = await userDocs(userId, `/documents`, { method: "POST", body: JSON.stringify({ title }) });
   if (!createRes.ok) throw new Error(`Docs create failed [${createRes.status}]: ${(await createRes.text()).slice(0, 300)}`);
   const doc = await createRes.json();
   const docId = doc.documentId;
-  const updateRes = await fetch(`${DOCS_GW}/documents/${docId}:batchUpdate`, {
+  const updateRes = await userDocs(userId, `/documents/${docId}:batchUpdate`, {
     method: "POST",
-    headers,
     body: JSON.stringify({ requests: [{ insertText: { location: { index: 1 }, text: body || " " } }] }),
   });
   if (!updateRes.ok) throw new Error(`Docs update failed [${updateRes.status}]: ${(await updateRes.text()).slice(0, 300)}`);
