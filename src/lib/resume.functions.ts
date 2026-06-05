@@ -1,17 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { callUserGoogle, GoogleNotConnectedError } from "@/lib/userGoogle.server";
 
 const AI_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
-const DOCS_GW = "https://connector-gateway.lovable.dev/google_docs/v1";
 
-function gwHeaders() {
-  const lk = process.env.LOVABLE_API_KEY;
-  const gk = process.env.GOOGLE_DOCS_API_KEY;
-  if (!lk) throw new Error("LOVABLE_API_KEY missing");
-  if (!gk) throw new Error("Google Docs not connected");
-  return { Authorization: `Bearer ${lk}`, "X-Connection-Api-Key": gk, "Content-Type": "application/json" };
-}
 
 async function ai(messages: any[], json = false): Promise<string> {
   const key = process.env.LOVABLE_API_KEY;
@@ -104,19 +97,12 @@ export const generateCoverLetter = createServerFn({ method: "POST" })
     return { letter, version, id: row.id };
   });
 
-async function createGoogleDoc(title: string, body: string): Promise<{ id: string; url: string }> {
-  const headers = gwHeaders();
-  const createRes = await fetch(`${DOCS_GW}/documents`, {
-    method: "POST", headers, body: JSON.stringify({ title }),
-  });
+async function createGoogleDoc(userId: string, title: string, body: string): Promise<{ id: string; url: string }> {
+  const createRes = await callUserGoogle({ userId, connectorId: "google_docs", path: "/v1/documents", init: { method: "POST", body: JSON.stringify({ title }) } });
   if (!createRes.ok) throw new Error(`Docs create failed: ${createRes.status} ${await createRes.text()}`);
   const doc = await createRes.json();
   const docId = doc.documentId;
-
-  await fetch(`${DOCS_GW}/documents/${docId}:batchUpdate`, {
-    method: "POST", headers,
-    body: JSON.stringify({ requests: [{ insertText: { location: { index: 1 }, text: body } }] }),
-  });
+  await callUserGoogle({ userId, connectorId: "google_docs", path: `/v1/documents/${docId}:batchUpdate`, init: { method: "POST", body: JSON.stringify({ requests: [{ insertText: { location: { index: 1 }, text: body || " " } }] }) } });
   return { id: docId, url: `https://docs.google.com/document/d/${docId}/edit` };
 }
 
@@ -127,9 +113,14 @@ export const exportResumeToDocs = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const { data: row, error } = await supabase.from("resume_versions").select("*").eq("id", data.resumeId).eq("user_id", userId).maybeSingle();
     if (error || !row) throw new Error("Resume not found");
-    const doc = await createGoogleDoc(row.title ?? `Resume v${row.version}`, row.content ?? "");
-    await supabase.from("resume_versions").update({ google_doc_id: doc.id, google_doc_url: doc.url }).eq("id", row.id);
-    return doc;
+    try {
+      const doc = await createGoogleDoc(userId, row.title ?? `Resume v${row.version}`, row.content ?? "");
+      await supabase.from("resume_versions").update({ google_doc_id: doc.id, google_doc_url: doc.url }).eq("id", row.id);
+      return doc;
+    } catch (e) {
+      if (e instanceof GoogleNotConnectedError) throw new Error("Connect Google in Settings → Connected accounts to export to Docs.");
+      throw e;
+    }
   });
 
 export const exportCoverLetterToDocs = createServerFn({ method: "POST" })
@@ -139,9 +130,14 @@ export const exportCoverLetterToDocs = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     const { data: row, error } = await supabase.from("cover_letter_versions").select("*").eq("id", data.letterId).eq("user_id", userId).maybeSingle();
     if (error || !row) throw new Error("Cover letter not found");
-    const doc = await createGoogleDoc(`Cover Letter v${row.version}`, row.content ?? "");
-    await supabase.from("cover_letter_versions").update({ google_doc_id: doc.id, google_doc_url: doc.url }).eq("id", row.id);
-    return doc;
+    try {
+      const doc = await createGoogleDoc(userId, `Cover Letter v${row.version}`, row.content ?? "");
+      await supabase.from("cover_letter_versions").update({ google_doc_id: doc.id, google_doc_url: doc.url }).eq("id", row.id);
+      return doc;
+    } catch (e) {
+      if (e instanceof GoogleNotConnectedError) throw new Error("Connect Google in Settings → Connected accounts to export to Docs.");
+      throw e;
+    }
   });
 
 export const listResumeVersions = createServerFn({ method: "GET" })
