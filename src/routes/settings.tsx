@@ -7,6 +7,11 @@ import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { SheetsMappingCard } from "@/components/zenith/SheetsMappingCard";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { startGoogleConnect, saveGoogleConnection, getMyGoogleConnection, disconnectGoogle } from "@/lib/userConnections.functions";
+import { connectAppUser } from "@/integrations/lovable/appUserConnectorClient";
+
 
 export const Route = createFileRoute("/settings")({
   head: () => ({ meta: [{ title: "Settings — OkJobs" }, { name: "description", content: "Profile, notifications, connected accounts, plan, and privacy." }] }),
@@ -95,39 +100,90 @@ function Toggle({ label, desc, defaultOn = false }: { label: string; desc: strin
   return <div className="flex items-center justify-between rounded-xl border border-border bg-background p-4"><div><div className="font-semibold">{label}</div><div className="text-xs text-muted-foreground">{desc}</div></div><button onClick={() => setOn(!on)} className={`h-6 w-11 rounded-full transition-colors ${on ? "bg-gradient-brand" : "bg-muted"}`}><span className={`block h-5 w-5 translate-y-0.5 rounded-full bg-white transition-transform ${on ? "translate-x-[22px]" : "translate-x-0.5"}`} /></button></div>;
 }
 
-const ACCOUNTS = [
-  { key: "gmail", name: "Gmail", desc: "Surface interview invites, offers, and recruiter replies in your Career Inbox." },
-  { key: "drive", name: "Google Drive", desc: "Save AI-generated resumes and cover letters straight into your Drive." },
-  { key: "calendar", name: "Google Calendar", desc: "Auto-create interview events and follow-up reminders." },
-  { key: "docs", name: "Google Docs", desc: "Open generated resumes in Docs for quick edits." },
+const SCOPE_BADGES = [
+  { key: "gmail", label: "Gmail" },
+  { key: "calendar", label: "Calendar" },
+  { key: "drive.file", label: "Drive" },
+  { key: "documents", label: "Docs" },
 ] as const;
 
 function ConnectedAccounts() {
+  const qc = useQueryClient();
+  const startFn = useServerFn(startGoogleConnect);
+  const saveFn = useServerFn(saveGoogleConnection);
+  const getFn = useServerFn(getMyGoogleConnection);
+  const disconnectFn = useServerFn(disconnectGoogle);
+
+  const conn = useQuery({ queryKey: ["my-google-connection"], queryFn: () => getFn() });
+  const current = (conn.data as any)?.connection ?? null;
+
+  const connect = useMutation({
+    mutationFn: async () => {
+      const result = await connectAppUser({
+        connectorId: "google",
+        gatewayBaseUrl: "https://connector-gateway.lovable.dev",
+        start: (targetOrigin) => startFn({ data: { targetOrigin } }),
+      });
+      if (!result.success) throw new Error(result.error || "Sign in failed");
+      await saveFn({ data: { connectionId: result.connectionId! } });
+    },
+    onSuccess: () => { toast.success("Google account connected"); qc.invalidateQueries({ queryKey: ["my-google-connection"] }); },
+    onError: (e: any) => toast.error(e.message ?? "Could not connect Google"),
+  });
+
+  const disconnect = useMutation({
+    mutationFn: () => disconnectFn(),
+    onSuccess: () => { toast.success("Google account disconnected"); qc.invalidateQueries({ queryKey: ["my-google-connection"] }); },
+    onError: (e: any) => toast.error(e.message ?? "Could not disconnect"),
+  });
+
   return (
     <div className="space-y-4">
       <div className="rounded-xl border border-dashed border-border bg-background p-4 text-xs text-muted-foreground">
-        Each account below is scoped to <span className="font-semibold text-foreground">your</span> profile. We never read another user's mailbox, Drive, or calendar.
+        Each user connects their <span className="font-semibold text-foreground">own</span> Google account. OkJobs never reads another user's mailbox, Drive, calendar, or Docs.
       </div>
-      <div className="grid gap-3 sm:grid-cols-2">
-        {ACCOUNTS.map((a) => (
-          <div key={a.key} className="flex flex-col gap-3 rounded-xl border border-border bg-background p-4">
-            <div>
-              <div className="text-sm font-bold">{a.name}</div>
-              <div className="mt-0.5 text-xs text-muted-foreground">{a.desc}</div>
+
+      <div className="rounded-2xl border-2 border-border bg-background p-5">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="min-w-0">
+            <div className="flex items-center gap-2 text-base font-bold">Google account</div>
+            <div className="mt-1 text-sm text-muted-foreground">
+              One sign-in unlocks Gmail (Career Inbox), Calendar (interviews + reminders), Drive + Docs (resume exports).
             </div>
-            <div className="flex items-center justify-between">
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+            {current ? (
+              <div className="mt-3 space-y-1.5">
+                <div className="inline-flex items-center gap-1.5 rounded-full bg-success/15 px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-success">
+                  Connected{current.email ? ` · ${current.email}` : ""}
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {SCOPE_BADGES.map((s) => (
+                    <span key={s.key} className="rounded-full border border-border bg-card px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">{s.label}</span>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
                 Not connected
-              </span>
-              <button
-                onClick={() => toast.info(`${a.name} per-user connect is rolling out soon.`)}
-                className="rounded-lg bg-gradient-brand px-3 py-1.5 text-xs font-bold text-white shadow-glow"
-              >
-                Connect {a.name}
-              </button>
-            </div>
+              </div>
+            )}
           </div>
-        ))}
+          <div className="flex gap-2">
+            {current ? (
+              <>
+                <button onClick={() => connect.mutate()} disabled={connect.isPending} className="rounded-lg border border-border bg-background px-3 py-2 text-xs font-semibold hover:bg-accent disabled:opacity-60">
+                  Reconnect
+                </button>
+                <button onClick={() => disconnect.mutate()} disabled={disconnect.isPending} className="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs font-semibold text-destructive hover:bg-destructive/20 disabled:opacity-60">
+                  Disconnect
+                </button>
+              </>
+            ) : (
+              <button onClick={() => connect.mutate()} disabled={connect.isPending} className="rounded-lg bg-gradient-brand px-4 py-2 text-sm font-bold text-white shadow-glow disabled:opacity-60">
+                {connect.isPending ? "Connecting…" : "Connect Google"}
+              </button>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

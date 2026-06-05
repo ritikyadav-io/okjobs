@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { syncRecruiterEmailsForConnectedProfile } from "@/lib/automation.server";
+import { syncRecruiterEmailsForAllConnectedUsers } from "@/lib/automation.server";
 
 function authorized(request: Request) {
   const key = request.headers.get("apikey");
@@ -9,7 +9,7 @@ function authorized(request: Request) {
 export const Route = createFileRoute("/api/public/cron/gmail-sync")({
   server: { handlers: { POST: async ({ request }) => {
     if (!authorized(request)) return new Response("Unauthorized", { status: 401 });
-    const result = await syncRecruiterEmailsForConnectedProfile();
+    const result = await syncRecruiterEmailsForAllConnectedUsers();
     return Response.json(result);
   } } },
 });
