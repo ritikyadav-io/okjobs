@@ -373,7 +373,10 @@ export type Database = {
       }
       recruiter_emails: {
         Row: {
+          ai_highlights: Json | null
+          ai_summary: string | null
           application_id: string | null
+          archived: boolean
           body: string | null
           company: string | null
           created_at: string
@@ -388,7 +391,10 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          ai_highlights?: Json | null
+          ai_summary?: string | null
           application_id?: string | null
+          archived?: boolean
           body?: string | null
           company?: string | null
           created_at?: string
@@ -403,7 +409,10 @@ export type Database = {
           user_id: string
         }
         Update: {
+          ai_highlights?: Json | null
+          ai_summary?: string | null
           application_id?: string | null
+          archived?: boolean
           body?: string | null
           company?: string | null
           created_at?: string

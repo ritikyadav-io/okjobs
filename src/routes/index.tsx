@@ -214,7 +214,7 @@ function Landing() {
           <div className="absolute left-1/2 top-0 h-[600px] w-[1000px] -translate-x-1/2 rounded-full bg-gradient-brand opacity-20 blur-3xl" />
           <div className="absolute right-0 top-40 h-[400px] w-[400px] rounded-full bg-cyan/20 blur-3xl" />
         </div>
-        <div className="mx-auto grid max-w-7xl gap-12 px-4 py-16 md:px-6 md:py-24 lg:grid-cols-12 lg:gap-8">
+        <div className="mx-auto grid max-w-7xl gap-12 px-4 pt-8 pb-16 md:px-6 md:pt-12 md:pb-20 lg:grid-cols-12 lg:gap-8">
           <div className="lg:col-span-7">
             <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/10 px-3 py-1 text-xs font-semibold text-primary">
               <Sparkles className="h-3.5 w-3.5" /> AI Career Operating System
