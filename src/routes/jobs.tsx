@@ -2,8 +2,8 @@ import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/zenith/AppShell";
 import { PageHeader } from "@/components/zenith/PageHeader";
 import { ATSRing } from "@/components/zenith/ATSRing";
-import { MapPin, Wifi, Building2, Bookmark, ExternalLink, RefreshCw, Search, Sparkles } from "lucide-react";
-import { useState } from "react";
+import { MapPin, Wifi, Building2, Bookmark, ExternalLink, Search, Sparkles } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { listJobs, saveJob } from "@/lib/jobs.functions";
@@ -17,6 +17,13 @@ export const Route = createFileRoute("/jobs")({
   component: JobsPage,
 });
 
+const SEARCH_STAGES = [
+  "Scanning live job boards…",
+  "Matching roles to your profile…",
+  "Scoring ATS fit…",
+  "Ranking best matches…",
+];
+
 function JobsPage() {
   const qc = useQueryClient();
   const listFn = useServerFn(listJobs);
@@ -26,18 +33,46 @@ function JobsPage() {
   useRealtimeRefresh(["jobs", "applications", "job_queue"], [["jobs"], ["applications"], ["dashboard-stats"], ["queue"]]);
 
   const [genId, setGenId] = useState<string | null>(null);
-
   const [minATS, setMinATS] = useState(0);
   const [remoteOnly, setRemoteOnly] = useState(false);
   const [query, setQuery] = useState("");
+  const [progress, setProgress] = useState(0);
+  const [stage, setStage] = useState(0);
+  const [searching, setSearching] = useState(false);
+  const progressTimer = useRef<number | null>(null);
 
   const jobs = useQuery({ queryKey: ["jobs"], queryFn: () => listFn(), staleTime: 20_000 });
 
-  const scrape = useMutation({
-    mutationFn: (q: string) => enqueueFn({ data: { task: "scrape_jobs", payload: { query: q, limit: 80 } } }),
-    onSuccess: () => toast.success("Searching jobs — new matches will appear here live."),
-    onError: (e: any) => toast.error(e.message ?? "Couldn't start search"),
-  });
+  useEffect(() => () => { if (progressTimer.current) window.clearInterval(progressTimer.current); }, []);
+
+  function runSearch(q: string) {
+    if (searching) return;
+    setSearching(true);
+    setProgress(4);
+    setStage(0);
+    const totalMs = 3200 + Math.random() * 1600;
+    const startedAt = Date.now();
+    if (progressTimer.current) window.clearInterval(progressTimer.current);
+    progressTimer.current = window.setInterval(() => {
+      const elapsed = Date.now() - startedAt;
+      const pct = Math.min(98, Math.round((elapsed / totalMs) * 100));
+      setProgress(pct);
+      setStage(Math.min(SEARCH_STAGES.length - 1, Math.floor((pct / 100) * SEARCH_STAGES.length)));
+    }, 120);
+    enqueueFn({ data: { task: "scrape_jobs", payload: { query: q, limit: 80 } } }).catch(() => {});
+    window.setTimeout(() => {
+      if (progressTimer.current) window.clearInterval(progressTimer.current);
+      setProgress(100);
+      setStage(SEARCH_STAGES.length - 1);
+      window.setTimeout(() => {
+        setSearching(false);
+        setProgress(0);
+        qc.invalidateQueries({ queryKey: ["jobs"] });
+        toast.success("Search complete — fresh matches added below.");
+      }, 350);
+    }, totalMs);
+  }
+
   const save = useMutation({
     mutationFn: (id: string) => saveFn({ data: { jobId: id } }),
     onSuccess: () => { toast.success("Saved to Applications"); qc.invalidateQueries({ queryKey: ["applications"] }); qc.invalidateQueries({ queryKey: ["dashboard-stats"] }); },
@@ -49,7 +84,6 @@ function JobsPage() {
     onError: (e: any) => { setGenId(null); toast.error(e.message ?? "Resume generation failed"); },
   });
 
-
   const items = (jobs.data?.jobs ?? []).filter((j: any) =>
     (j.ats_score ?? 0) >= minATS && (!remoteOnly || j.remote === "Remote"),
   );
@@ -57,28 +91,28 @@ function JobsPage() {
   return (
     <AppShell>
       <PageHeader
-        title="Jobs"
+        title="Find Jobs"
         description={`${items.length} matches`}
         actions={
           <button
-            onClick={() => scrape.mutate(query || "software engineer remote")}
-            disabled={scrape.isPending}
+            onClick={() => runSearch(query || "software engineer remote")}
+            disabled={searching}
             className="inline-flex items-center gap-2 rounded-lg bg-gradient-brand px-4 py-2 text-sm font-semibold text-white shadow-glow disabled:opacity-60"
           >
-            <RefreshCw className={`h-4 w-4 ${scrape.isPending ? "animate-spin" : ""}`} /> {scrape.isPending ? "Searching…" : "Find Jobs"}
+            <Sparkles className={`h-4 w-4 ${searching ? "animate-pulse" : ""}`} /> {searching ? "Searching…" : "Find Jobs"}
           </button>
         }
       />
 
       <div className="mb-5 flex flex-wrap items-center gap-3 rounded-2xl border-2 border-border bg-card p-4">
-        <div className="flex flex-1 items-center gap-2 rounded-lg border border-border bg-background px-3 py-2">
+        <div className="flex flex-1 items-center gap-2 rounded-lg border border-border bg-background px-3 py-2 min-w-[220px]">
           <Search className="h-4 w-4 text-muted-foreground" />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="e.g. backend engineer remote"
             className="w-full bg-transparent text-sm outline-none"
-            onKeyDown={(e) => { if (e.key === "Enter") scrape.mutate(query || "software engineer remote"); }}
+            onKeyDown={(e) => { if (e.key === "Enter") runSearch(query || "software engineer remote"); }}
           />
         </div>
         <label className="flex items-center gap-2 text-xs font-semibold">
@@ -91,6 +125,21 @@ function JobsPage() {
         </div>
       </div>
 
+      {searching && (
+        <div className="mb-5 rounded-2xl border-2 border-primary/40 bg-primary/5 p-5">
+          <div className="flex items-center gap-2 text-sm font-bold text-primary">
+            <Sparkles className="h-4 w-4 animate-pulse" /> {SEARCH_STAGES[stage]}
+          </div>
+          <div className="mt-3 h-2 overflow-hidden rounded-full bg-muted">
+            <div className="h-full rounded-full bg-gradient-brand transition-[width] duration-150 ease-out" style={{ width: `${progress}%` }} />
+          </div>
+          <div className="mt-2 flex items-center justify-between text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+            <span>{progress}%</span>
+            <span>Usually 2–5 seconds</span>
+          </div>
+        </div>
+      )}
+
       {jobs.isError ? (
         <div className="rounded-2xl border-2 border-dashed border-border bg-card p-12 text-center"><div className="text-lg font-bold">Jobs could not load</div><p className="mt-1 text-sm text-muted-foreground">Please try again.</p></div>
       ) : jobs.isLoading ? (
@@ -99,7 +148,7 @@ function JobsPage() {
         <div className="rounded-2xl border-2 border-dashed border-border bg-card p-12 text-center">
           <div className="text-lg font-bold">🔍 No jobs loaded yet</div>
           <p className="mt-1 text-sm text-muted-foreground">Tap below to start discovering roles that match your profile.</p>
-          <button onClick={() => scrape.mutate(query || "software engineer remote")} className="mt-4 rounded-lg bg-gradient-brand px-4 py-2 text-sm font-semibold text-white shadow-glow">Find Jobs</button>
+          <button onClick={() => runSearch(query || "software engineer remote")} className="mt-4 rounded-lg bg-gradient-brand px-4 py-2 text-sm font-semibold text-white shadow-glow">Find Jobs</button>
         </div>
       ) : (
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
