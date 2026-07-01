@@ -1,5 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireSupabaseAuth } from "@/lib/single-user";
 import { buildBriefingData, sendBriefingForUser } from "@/lib/automation.server";
 
 export const generateBriefing = createServerFn({ method: "POST" })

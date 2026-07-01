@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireSupabaseAuth } from "@/lib/single-user";
 import { callUserGoogle, GoogleNotConnectedError } from "@/lib/userGoogle.server";
 
 const AI_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
