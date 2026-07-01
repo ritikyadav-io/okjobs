@@ -1,57 +1,79 @@
+# OkJobs → single-user Mistral-style rebuild
 
-This is a large, multi-area request. To ship it well without breaking working code, I'll split it into 4 focused phases. After you approve, I'll execute them in order and check in between each.
+You picked (a) remove auth entirely, (b) redesign every page in Mistral style, (c) fix Google connect + more skills + dashboard gap. Before I start, I need to be honest about the size and risk of this — please read the "Read this first" section and confirm.
 
-## Phase 1 — Jobs search & scraping fixes (backend + Jobs page)
+## Read this first — the tension in your request
 
-Problems today:
-- Typing "data analyst" doesn't filter — scrape runs but UI shows mixed/old jobs.
-- After scraping, results sometimes don't appear until refresh.
-- Only a few sources, low volume, no internships.
-- Old searches stay in the list.
+1. **"Remove auth entirely" and "fix the security findings" contradict each other.** The findings (orphaned jobs, cron secured by anon key, realtime open, jobs visible across users) only matter in a multi-user app. If we go single-user, all four findings become non-issues by definition: there is no "other user" to leak to. I will **drop RLS + auth** and mark those findings as "N/A — single-user app" in security memory. If you later re-enable auth, they come back.
 
-Changes:
-- `automation.server.ts` → expand Firecrawl search to cover LinkedIn, Indeed, Glassdoor, Naukri, Internshala, Wellfound, RemoteOK, WeWorkRemotely, Monster, Hirist, Cutshort, Instahyre, plus targeted company career pages (TCS, Wipro, Infosys, Amazon, Microsoft, Walmart, Rippling, Databricks, CRED, Shunya). Run queries in parallel, dedupe by URL, target 50+ results per scrape.
-- Honor the user's query verbatim (append "internship" variant automatically when the query contains "intern").
-- `scrapeJobs` server fn → before insert, **delete this user's previous jobs that don't match the new query** so the list reflects the latest search only.
-- `jobs.tsx` → after scrape mutation success, force `refetchQueries` (not just invalidate) and add client-side filter on `query` so results visibly match the search term.
-- Empty state after scrape: show "Found N — loading…" while query refetches.
+2. **"Connect Google" only makes sense per-user.** Right now the Google connection is stored in `user_google_connections` scoped by `auth.uid()`. In a single-user app there is no `auth.uid()`. I will store the single Google connection in a new `app_settings` row keyed to a hardcoded `SINGLE_USER_ID` sentinel, so Gmail sync / Calendar / Docs still work — but the "one shared Google account" IS the account. Anyone who opens the app uses it. That's the tradeoff of single-user mode.
 
-## Phase 2 — Connector Health page + manual "Run now" + verification logging
+3. **"Full-site Mistral redesign" is genuinely large.** 15+ routes, new fonts (PP Editorial Old is not on Google Fonts — I'll use `Fraunces` or `Instrument Serif` as the closest free near-serif; PP Editorial Old is a paid Pangram Pangram font), new token system, sunset stripe on every page. I will ship it in one pass but expect some pages (queue, integrations, resume-lab internals) to be functional-but-rougher on first cut. Landing, dashboard, jobs, applications, career-inbox, settings, onboarding will get full polish.
 
-- New table `connector_runs` (id, user_id, connector, status, message, duration_ms, ran_at). Used as the activity log.
-- New server fns: `runGmailSyncNow`, `runScrapeJobsNow`, `runDailyBriefingNow`, `runCalendarSyncNow`, `runResendTestNow`, `verifyConnector(name)` — each writes a row to `connector_runs`.
-- `verifyConnector` calls `https://connector-gateway.lovable.dev/api/v1/verify_credentials` for Gmail / Calendar / Docs / Sheets / Resend / Firecrawl and pings Supabase with a 1-row select.
-- New route `/integrations` (connector health screen): one row per connector showing status dot (green/amber/red), last successful run, last error, **Verify** button, **Run now** button. Live-updates via `useRealtimeRefresh(["connector_runs"])`.
+If any of this isn't what you want, say so now — otherwise I ship it.
 
-## Phase 3 — Performance: faster navigation & sync
+## What I'll do
 
-- Add TanStack Query `staleTime: 30_000` + `placeholderData: keepPreviousData` to the list queries (jobs, applications, calendar, inbox) so route changes render instantly from cache instead of showing a spinner.
-- Prefetch on hover for sidebar links (`router.preloadRoute`).
-- Move heavy work in `syncRecruiterEmails` / `scrapeJobs` to fire-and-return: the server fn returns immediately after kicking off, writes progress to `connector_runs`, UI shows toast + live updates via realtime. No more 30-second "Syncing…" blocks.
+### 1. Auth removal (foundation)
 
-## Phase 4 — Mobile-only redesign (Zenith)
+- Delete routes: `login.tsx`, `signup.tsx`, `_authenticated/route.tsx` (managed layout — replaced with a stub that just renders `<Outlet />`).
+- Delete `AuthLayout.tsx`, `use-auth.tsx`.
+- Move every route currently under `_authenticated/` to top-level (they'll just render — no gate).
+- Server functions: strip `.middleware([requireSupabaseAuth])` from every `*.functions.ts`. Replace `context.userId` with a constant `SINGLE_USER_ID` (a fixed UUID stored in code + used everywhere). Replace `context.supabase` with `supabaseAdmin`.
+- Skip the onboarding gate. Onboarding becomes optional and lives at `/onboarding` if the user wants to edit their profile.
+- Profile: seed one row in `profiles` with `SINGLE_USER_ID` on first load, keep it in localStorage-backed cache too so the "don't ask again" behavior is instant.
 
-Strictly behind `md:` breakpoint — desktop untouched.
-- New `MobileTopBar` (hamburger / ZENITH / bell), sticky, dark glassmorphism.
-- New `MobileSidebarDrawer` (slide-in sheet using existing `Sheet` component) with full nav + user card + plan badge.
-- New `MobileBottomNav` (Home / Jobs / Applications / Inbox / Profile), floating glassmorphism.
-- `AppShell` renders desktop layout for `md+` and the new mobile shell for `<md`. Page contents reused as-is.
-- Mobile dashboard: greeting, metric cards (2-col grid), AI briefing gradient card, matched-today list, pipeline list — all using existing data hooks.
-- Mobile job cards: stacked layout, larger tap targets, no horizontal overflow.
-- Add Google Sheets connector + a Resume upload button on the Resume Lab page (small ask piggybacking on this phase).
+### 2. Database changes (one migration)
 
-## Technical notes
+- Disable RLS on every table (`jobs`, `applications`, `recruiter_emails`, `calendar_events`, `resume_versions`, `cover_letter_versions`, `daily_briefings`, `connector_runs`, `job_queue`, `sheet_settings`, `user_google_connections`, `profiles`).
+- Add a new `app_settings` table (single row) to hold the shared Google connection + shared preferences.
+- Seed one profile row + one app_settings row with `SINGLE_USER_ID = '00000000-0000-0000-0000-000000000001'`.
+- Keep FKs to `auth.users` off — drop the `on delete cascade` refs since there are no auth users.
 
-- All new server fns use `requireSupabaseAuth` and write to `connector_runs` for auditability.
-- Firecrawl search uses `search` with `limit: 10` per source, parallelized with `Promise.allSettled`, then `upsert(..., { onConflict: "created_by,url", ignoreDuplicates: true })` — keeps idempotency, avoids the previous unique-constraint error.
-- Old-search cleanup: `delete from jobs where created_by = userId and scraped_at < now() - interval '24 hours'` runs at the top of each scrape.
-- Mobile components live under `src/components/zenith/mobile/` and are only mounted via `useIsMobile()` to avoid SSR mismatch.
+### 3. Security memory update
 
-## Order of execution
+- Note the app is single-user, no auth, all data global. Any "cross-user leak" finding is N/A.
+- Cron endpoints: still add a shared secret (`CRON_SECRET` env var) since they're publicly reachable — this is genuinely fixable without auth. Cron routes will 401 unless `Authorization: Bearer $CRON_SECRET` is present.
 
-1. Phase 1 (highest user pain) — ~6 file edits, 1 migration if needed.
-2. Phase 2 — 1 migration (`connector_runs`), 1 new route, 1 new lib file.
-3. Phase 3 — small edits across query hooks.
-4. Phase 4 — new mobile components + `AppShell` branch.
+### 4. Mistral-style design system
 
-I'll pause after each phase so you can verify before I move on.
+Global tokens in `src/styles.css`:
+- Fonts: `Fraunces` (near-serif, free on Google Fonts — closest to PP Editorial Old), `Inter`, `JetBrains Mono`. Loaded via `<link>` in `__root.tsx`.
+- Colors: cream `#F7F3E9`, cream-soft `#FCF9F1`, cream-deeper `#EFE7D2`, beige-deep `#E5DBC0`, primary orange `#FA5F1C`, primary-deep `#D94A0F`, sunshine-500 `#F59E0B`, sunshine-700 `#EA580C`, yellow-saturated `#FCD34D`, ink `#0F0F0F`, canvas `#FFFDF8`, hairline-soft `#E8E4DA`.
+- Radii: buttons `rounded-md` (8px), cards `rounded-lg` (12px). No pills except badges.
+- New components: `SunsetStripe`, `HeroBandSunset`, `CtaBannerCream`, `FooterCream`, `CardCream`, `ButtonDark`, `ButtonCream`, `PromoBanner`.
+
+Every page gets: promo banner (optional) → nav → content → cream CTA banner → sunset stripe → footer.
+
+### 5. Pages redesigned
+
+Full-polish: `index.tsx` (landing), `dashboard.tsx`, `jobs.tsx`, `applications.tsx`, `recruiter-inbox.tsx`, `settings.tsx`, `onboarding.tsx`, `about.tsx`, `blog.tsx`, `privacy.tsx`, `terms.tsx`.
+
+Token-inherit only (structure kept, restyled): `calendar.tsx`, `briefing.tsx`, `resume-lab.tsx`, `integrations.tsx`, `queue.tsx`.
+
+### 6. Small fixes
+
+- **Dashboard gap**: header row uses `justify-between` with the notification bell — I'll close the empty space by making the greeting flex-grow properly and the bell align tight-right.
+- **Skill suggestions** (onboarding step 2): add Data Analytics, Machine Learning, AI, Frontend, Backend, Data Engineering, DevOps, Cloud (AWS/GCP/Azure), SQL, Python, Java, Product Management, UX Design, Mobile (iOS/Android), Cybersecurity, QA/Testing, System Design.
+- **Google connect error**: after auth removal, the OAuth flow currently 401s because the `requireSupabaseAuth` middleware rejects the unauthenticated call. Replacing the middleware fixes it; connection is saved to the single `app_settings` row.
+
+## Technical section
+
+- New constant `SINGLE_USER_ID` in `src/lib/single-user.ts` used by every server fn.
+- `src/start.ts`: remove `attachSupabaseAuth` from `functionMiddleware`.
+- Cron routes gain `Authorization` check: read `process.env.CRON_SECRET` inside handler, timing-safe compare, 401 otherwise. I'll add `CRON_SECRET` via `generate_secret`.
+- Migration order: (1) `alter table … disable row level security` on all tables, (2) create `app_settings`, (3) seed profile + app_settings.
+- Delete `_authenticated/route.tsx` — since it's integration-managed, I'll replace its body with `<Outlet />` and no gate.
+- Fonts loaded via Google Fonts `<link>` tag in `__root.tsx` head (Fraunces + Inter + JetBrains Mono). No `@import` in styles.css.
+- Landing page rebuilt from scratch to Mistral spec: promo banner → hero with warm gradient bg + Fraunces headline → logo wall → 3-up feature cards on cream → stat row → coding/AI mockup section → testimonials → pricing tiers (one featured with orange border) → FAQ → cream CTA → sunset stripe → cream footer.
+
+## What I will NOT do this pass (out of scope)
+
+- Buy/install PP Editorial Old (paid). Using Fraunces as free substitute. If you want the real font, upload the file and I'll swap it in a follow-up.
+- Multi-user support (you explicitly opted out).
+- Real Mistral atmospheric mountain photography — I'll use CSS gradients and one AI-generated hero image.
+- Rewriting the resume-lab AI logic — only restyled.
+
+## Approval
+
+Confirm and I'll execute in this order: migration → auth removal → cron secret → design tokens → landing → dashboard → other pages → small fixes → verify build. Expect ~30-50 file changes.
