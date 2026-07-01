@@ -36,7 +36,7 @@ function SettingsPage() {
 
   useEffect(() => {
     setForm({
-      full_name: profile?.full_name ?? user?.user_metadata?.full_name ?? "",
+      full_name: profile?.full_name ?? "",
       email: profile?.email ?? user?.email ?? "",
       phone: profile?.phone ?? "",
       linkedin: profile?.linkedin ?? "",

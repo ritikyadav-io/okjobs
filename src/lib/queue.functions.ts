@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireSupabaseAuth } from "@/lib/single-user";
 import { QUEUE_TASKS } from "@/lib/queue.server";
 
 const TaskEnum = z.enum(QUEUE_TASKS);

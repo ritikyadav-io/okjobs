@@ -1,6 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
-import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { requireSupabaseAuth } from "@/lib/single-user";
 import { scrapeJobsForUser } from "@/lib/automation.server";
 
 export const scrapeJobs = createServerFn({ method: "POST" })

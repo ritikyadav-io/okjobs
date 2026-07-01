@@ -12,7 +12,28 @@ export const Route = createFileRoute("/onboarding")({
 });
 
 const STEPS = ["Personal Info", "Career Preferences", "Your Skills"];
-const SUGGESTED_SKILLS = ["React", "TypeScript", "Node.js", "Python", "SQL", "AWS", "Docker", "GraphQL", "Java", "Go", "Figma", "Product Management"];
+const SUGGESTED_SKILLS = [
+  // Data & AI
+  "Data Analytics", "Data Science", "Machine Learning", "Deep Learning", "AI", "LLMs", "NLP",
+  "Computer Vision", "MLOps", "Data Engineering", "ETL", "Airflow", "Spark", "Snowflake", "dbt",
+  "Power BI", "Tableau", "Looker", "Excel", "R", "Statistics",
+  // Languages
+  "Python", "JavaScript", "TypeScript", "Java", "Go", "Rust", "C++", "C#", "Kotlin", "Swift", "Ruby", "PHP",
+  // Frontend
+  "Frontend", "React", "Next.js", "Vue", "Svelte", "Angular", "HTML", "CSS", "Tailwind CSS", "Redux",
+  // Backend
+  "Backend", "Node.js", "Express", "NestJS", "Django", "FastAPI", "Flask", "Spring Boot", "Rails", ".NET", "GraphQL", "REST APIs",
+  // Data stores
+  "SQL", "PostgreSQL", "MySQL", "MongoDB", "Redis", "Elasticsearch",
+  // Cloud & DevOps
+  "AWS", "GCP", "Azure", "Docker", "Kubernetes", "Terraform", "CI/CD", "Linux", "Git",
+  // Mobile
+  "iOS", "Android", "React Native", "Flutter",
+  // Design & Product
+  "Figma", "UI/UX", "Product Design", "Product Management", "Agile", "Scrum",
+  // Business
+  "Marketing", "Content Writing", "SEO", "Sales", "Customer Success", "Finance",
+];
 
 function Onboarding() {
   const nav = useNavigate();
@@ -35,9 +56,8 @@ function Onboarding() {
   });
   const [skillInput, setSkillInput] = useState("");
 
-  useEffect(() => {
-    if (!authLoading && !user) nav({ to: "/signup" });
-  }, [authLoading, user, nav]);
+  // Single-user app — no auth redirect needed.
+  useEffect(() => {}, []);
 
   useEffect(() => {
     if (profile) {
