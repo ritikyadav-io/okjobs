@@ -124,6 +124,7 @@ function Onboarding() {
       .eq("id", user.id);
     setSaving(false);
     if (error) { toast.error(error.message); return; }
+    try { localStorage.setItem("okjobs.onboarded", "1"); } catch {}
     await refreshProfile();
     setDone(true);
   };
