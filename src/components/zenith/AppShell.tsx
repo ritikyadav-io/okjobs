@@ -137,9 +137,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               </SheetContent>
             </Sheet>
             <Link to="/dashboard"><Logo compact /></Link>
-            <button aria-label="Notifications" className="grid h-10 w-10 place-items-center rounded-md border border-[hsl(var(--beige-deep))] bg-white">
-              <Bell className="h-4 w-4" />
-            </button>
+            <NotificationsBell compact />
           </div>
 
           {/* Desktop — page title left, controls right (removes empty gap) */}
