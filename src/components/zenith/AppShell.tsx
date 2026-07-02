@@ -45,10 +45,22 @@ export function AppShell({ children }: { children: ReactNode }) {
   const nav = useNavigate();
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  // Onboarding gate (single-user, no auth check)
-  const onboardingIncomplete =
+  // Onboarding gate (single-user, no auth check). Sticky: once localStorage flag is set, never gate again.
+  const [onboardedFlag, setOnboardedFlag] = useState(false);
+  useEffect(() => {
+    try { setOnboardedFlag(localStorage.getItem("okjobs.onboarded") === "1"); } catch {}
+  }, [profile]);
+  const profileComplete =
     !!profile &&
-    (!profile.full_name?.trim() || !profile.preferred_role?.trim() || (profile.resume_skills?.length ?? 0) < 3);
+    !!profile.full_name?.trim() &&
+    !!profile.preferred_role?.trim() &&
+    (profile.resume_skills?.length ?? 0) >= 3;
+  const onboardingIncomplete = !!profile && !profileComplete && !onboardedFlag;
+  useEffect(() => {
+    if (profileComplete) {
+      try { localStorage.setItem("okjobs.onboarded", "1"); } catch {}
+    }
+  }, [profileComplete]);
   useEffect(() => {
     if (onboardingIncomplete && pathname !== "/onboarding") nav({ to: "/onboarding" });
   }, [onboardingIncomplete, pathname, nav]);
