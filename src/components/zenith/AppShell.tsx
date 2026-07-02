@@ -3,10 +3,14 @@ import {
   Home, Briefcase, ClipboardList, FileText, Inbox, Calendar, Sunrise,
   Settings, Bell, Menu, Plug, User, type LucideIcon,
 } from "lucide-react";
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { Logo } from "./Logo";
 import { useAuth } from "@/hooks/use-auth";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { listRecruiterEmails } from "@/lib/gmail.functions";
 
 type NavItem = { to: string; label: string; icon: LucideIcon };
 
