@@ -183,3 +183,81 @@ export function AppShell({ children }: { children: ReactNode }) {
     </div>
   );
 }
+
+function NotificationsBell({ compact = false }: { compact?: boolean }) {
+  const emailsFn = useServerFn(listRecruiterEmails);
+  const q = useQuery({
+    queryKey: ["notifications-inbox"],
+    queryFn: () => emailsFn(),
+    staleTime: 60_000,
+    retry: 1,
+  });
+  const items = useMemo(() => {
+    const list = (q.data as any)?.emails ?? [];
+    return list.filter((e: any) => !e.read).slice(0, 6);
+  }, [q.data]);
+  const unread = items.length;
+  const btnSize = compact ? "h-10 w-10" : "h-9 w-9";
+
+  return (
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          aria-label="Notifications"
+          className={`relative grid ${btnSize} place-items-center rounded-md border border-[hsl(var(--beige-deep))] bg-white hover:bg-cream`}
+        >
+          <Bell className="h-4 w-4" />
+          {unread > 0 && (
+            <span className="absolute -right-1 -top-1 grid h-4 min-w-4 place-items-center rounded-full bg-[hsl(var(--primary))] px-1 text-[10px] font-bold text-white">
+              {unread > 9 ? "9+" : unread}
+            </span>
+          )}
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="end" sideOffset={8} className="w-[340px] p-0">
+        <div className="flex items-center justify-between border-b border-border px-4 py-3">
+          <div className="text-sm font-semibold">Notifications</div>
+          <Link to="/recruiter-inbox" className="text-xs font-medium text-[hsl(var(--primary))] hover:underline">Open inbox</Link>
+        </div>
+        <div className="max-h-[360px] overflow-y-auto">
+          {q.isLoading ? (
+            <div className="space-y-2 p-3">
+              {[0, 1, 2].map((i) => <div key={i} className="h-12 animate-pulse rounded-md bg-muted/40" />)}
+            </div>
+          ) : q.isError ? (
+            <div className="p-6 text-center">
+              <div className="text-sm font-medium">Couldn't load notifications</div>
+              <div className="mt-1 text-xs text-muted-foreground">Check your connection and try again.</div>
+              <button onClick={() => q.refetch()} className="mt-3 rounded-md border border-border px-3 py-1.5 text-xs font-medium hover:bg-accent">Retry</button>
+            </div>
+          ) : unread === 0 ? (
+            <div className="p-6 text-center">
+              <div className="mx-auto grid h-10 w-10 place-items-center rounded-full bg-cream">
+                <Bell className="h-4 w-4 text-slate-500" />
+              </div>
+              <div className="mt-3 text-sm font-medium">You're all caught up</div>
+              <div className="mt-1 text-xs text-muted-foreground">New recruiter replies will appear here.</div>
+              <Link to="/recruiter-inbox" className="mt-3 inline-block rounded-md bg-[hsl(var(--ink))] px-3 py-1.5 text-xs font-medium text-white">Open Career Inbox</Link>
+            </div>
+          ) : (
+            <ul className="divide-y divide-border">
+              {items.map((e: any) => (
+                <li key={e.id}>
+                  <Link to="/recruiter-inbox" className="flex gap-3 px-4 py-3 hover:bg-cream">
+                    <div className="grid h-8 w-8 shrink-0 place-items-center rounded-md bg-gradient-brand text-xs font-bold text-white">
+                      {(e.company?.[0] ?? "?").toUpperCase()}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="truncate text-sm font-medium">{e.company || "Unknown"}</div>
+                      <div className="truncate text-xs text-muted-foreground">{e.subject}</div>
+                    </div>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+}
