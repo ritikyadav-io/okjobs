@@ -147,12 +147,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               <div className="font-display text-2xl leading-none">{pageTitle}</div>
             </div>
             <div className="flex items-center gap-2">
-              <button
-                aria-label="Notifications"
-                className="relative grid h-9 w-9 place-items-center rounded-md border border-[hsl(var(--beige-deep))] bg-white hover:bg-cream"
-              >
-                <Bell className="h-4 w-4" />
-              </button>
+              <NotificationsBell />
             </div>
           </div>
         </header>
